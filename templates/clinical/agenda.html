@@ -5,7 +5,7 @@
   <div class="flex items-center justify-between flex-wrap gap-3">
     <div>
       <h1 class="text-xl font-bold text-slate-900">📅 Agenda · {{ mes_nombre }}</h1>
-      <p class="text-xs text-slate-500 mt-1">🕐 Fecha del servidor (este equipo, sin internet): <strong>{{ hoy|date:"d/m/Y H:i" }}</strong></p>
+      <p class="text-xs text-slate-500 mt-1">🕐 Fecha del servidor (este equipo, sin internet): <strong>{{ ahora|date:"d/m/Y H:i" }}</strong></p>
     </div>
     <div class="flex gap-2">
       <a href="?mes={{ mes_prev }}" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">← Anterior</a>

@@ -342,7 +342,7 @@ class AgendaView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         import calendar as cal
-        from datetime import date
+        from datetime import date, datetime
 
         ctx = super().get_context_data(**kwargs)
         hoy = date.today()
@@ -377,6 +377,7 @@ class AgendaView(LoginRequiredMixin, TemplateView):
             "mes_actual": f"{y}-{m:02d}",
             "mes_prev": f"{py}-{pm:02d}", "mes_next": f"{ny}-{nm:02d}",
             "hoy": hoy,
+            "ahora": datetime.now(),
         })
         return ctx
 
