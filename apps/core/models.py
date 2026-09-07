@@ -23,7 +23,7 @@ class DatosLaboratorio(models.Model):
     lema = models.CharField(max_length=120, blank=True)
     simbolo_moneda = models.CharField(max_length=5, default="Bs.")
     logo = models.FileField(
-        "Logo del laboratorio (PNG, JPG o SVG)",
+        "Logo de la clínica (PNG, JPG o SVG)",
         upload_to="logo/",
         null=True,
         blank=True,
@@ -31,25 +31,25 @@ class DatosLaboratorio(models.Model):
         help_text="Se muestra en el encabezado de reportes y facturas en PDF",
     )
     bioanalista_nombre = models.CharField(
-        "Bioanalista para firma", max_length=120, blank=True
+        "Odontólogo para firma", max_length=120, blank=True
     )
     bioanalista_registro = models.CharField(
-        "Nro de registro del bioanalista", max_length=40, blank=True
+        "Nro de registro del odontólogo (CO)", max_length=40, blank=True
     )
     firma_imagen = models.ImageField(
-        "Firma del bioanalista (PNG transparente)",
+        "Firma del odontólogo (PNG transparente)",
         upload_to="firmas/", null=True, blank=True,
         help_text="Se imprime sobre la línea de firma en los PDF",
     )
     sello_imagen = models.ImageField(
-        "Sello del laboratorio (PNG transparente)",
+        "Sello de la clínica (PNG transparente)",
         upload_to="sellos/", null=True, blank=True,
         help_text="Se imprime junto a la firma en los PDF",
     )
 
     class Meta:
-        verbose_name = "Datos del laboratorio"
-        verbose_name_plural = "Datos del laboratorio"
+        verbose_name = "Datos de la clínica"
+        verbose_name_plural = "Datos de la clínica"
 
     def __str__(self):
         return self.nombre

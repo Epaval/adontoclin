@@ -18,3 +18,14 @@ class DatosLaboratorioAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+# Ocultar modelos de axes (seguridad) del admin
+from django.contrib import admin as _admin
+try:
+    from axes.models import AccessAttempt, AccessLog, AccessFailure
+    for _m in (AccessAttempt, AccessLog, AccessFailure):
+        if _admin.site.is_registered(_m):
+            _admin.site.unregister(_m)
+except Exception:
+    pass

@@ -4,6 +4,10 @@ from django.db.models.functions import Lower
 
 
 class Medico(models.Model):
+    class Meta:
+        verbose_name = "Odontólogo"
+        verbose_name_plural = "Odontólogos"
+
     nombres = models.CharField(max_length=120)
     apellidos = models.CharField(max_length=120)
 
