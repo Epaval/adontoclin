@@ -10,6 +10,9 @@
 .diente svg{width:100%;height:100%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .diente-num{position:absolute;left:0;right:0;text-align:center;font-size:10px;color:#64748b;font-weight:700;font-family:monospace}
 .num-sup{bottom:-16px}.num-inf{top:-16px}
+.quad-sep-v{width:3px;align-self:stretch;background:linear-gradient(180deg,transparent,#64748b 15%,#64748b 85%,transparent);margin:0 12px;border-radius:2px;flex-shrink:0}
+.quad-labels{display:flex;justify-content:space-between;padding:0 60px;margin-bottom:6px}
+.quad-labels span{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#64748b;font-weight:700}
 .odonto-sep{height:2px;background:linear-gradient(90deg,transparent,#334155,transparent);margin:56px 0}
 .odonto-tooltip{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #334155;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:11px;width:200px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,.5);text-align:left}
 .diente:hover .odonto-tooltip{display:block}
@@ -35,6 +38,7 @@
 
     <p class="text-xs text-slate-500 mb-4 text-center">Pasa el mouse sobre un diente para ver su historial · Haz clic para registrar un tratamiento</p>
 
+    <div class="quad-labels"><span>Cuadrante 1 · superior derecho</span><span>Cuadrante 2 · superior izquierdo</span></div>
     <div class="odonto-arcada" style="padding-bottom:34px">
       {% for d in dientes_superior %}
       <div class="diente" data-fdi="{{ d.num }}" style="transform:translateY({{ d.off }}px)" onclick="abrirModal('{{ d.num }}')">
@@ -49,6 +53,7 @@
         </div>
         {% endif %}
       </div>
+      {% if forloop.counter == 8 %}<div class="quad-sep-v"></div>{% endif %}
       {% endfor %}
     </div>
 
@@ -68,8 +73,11 @@
         </div>
         {% endif %}
       </div>
+      {% if forloop.counter == 8 %}<div class="quad-sep-v"></div>{% endif %}
       {% endfor %}
     </div>
+
+    <div class="quad-labels" style="margin-top:14px;margin-bottom:0"><span>Cuadrante 4 · inferior derecho</span><span>Cuadrante 3 · inferior izquierdo</span></div>
 
     <div class="leyenda">
       {% for tipo, color in colores_leyenda %}
