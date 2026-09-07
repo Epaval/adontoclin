@@ -38,8 +38,10 @@ def cambiar_tema(request):
     tema = request.POST.get("tema", "dark")
     if tema not in ("dark", "azul", "verde", "rosa"):
         tema = "dark"
-    d = DatosLaboratorio.objects.first()
-    if d:
+    d, _ = DatosLaboratorio.objects.get_or_create(
+        pk=1, defaults={"nombre": "OdontoClin", "tema": tema}
+    )
+    if d.tema != tema:
         d.tema = tema
         d.save(update_fields=["tema"])
     return redirect(request.META.get("HTTP_REFERER", "/"))
