@@ -24,17 +24,19 @@
 </head>
 <body>
   <table class="header"><tr>
-    <td style="border:none;width:60%">
-      {% if logo_b64 %}<img src="data:{{ logo_mime }};base64,{{ logo_b64 }}" style="width:56px;height:56px;margin-bottom:6px">{% endif %}
+    <td style="border:none;width:22%;text-align:center;vertical-align:middle">
+      {% if logo_b64 %}<img src="data:{{ logo_mime }};base64,{{ logo_b64 }}" style="width:95px;height:95px">{% endif %}
+    </td>
+    <td style="border:none;width:48%;text-align:center;vertical-align:middle">
       <div class="clinic">{{ datos.nombre|default:"ODONTOCLIN" }}</div>
       <div class="clinic-sub">
-        RIF: {{ datos.rif|default:"J-00000000-0" }}<br>
-        {{ datos.direccion|default:"Av. Principal, Valencia Edo. Carabobo" }}<br>
-        Tlf: {{ datos.telefono|default:"0241-0000000" }} · {{ datos.email|default:"contacto@odontoclin.com" }}<br>
-        <em>"{{ datos.lema|default:"Sonríe con salud" }}"</em>
+        <strong>RIF: {{ datos.rif|default:"J-00000000-0" }}</strong><br>
+        {{ datos.direccion|default:"" }}{% if datos.ciudad %} · {{ datos.ciudad }}{% endif %}<br>
+        Tlf: {{ datos.telefono|default:"" }} · {{ datos.email|default:"" }}<br>
+        <em>"{{ datos.lema|default:"" }}"</em>
       </div>
     </td>
-    <td style="border:none" class="fact-box">
+    <td style="border:none;width:30%;vertical-align:top" class="fact-box">
       <div class="fact-title">FACTURA</div>
       <div><strong>N° {{ factura.numero }}</strong></div>
       <div><strong>N° Control: {{ factura.numero_control }}</strong></div>
