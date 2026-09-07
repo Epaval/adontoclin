@@ -44,14 +44,15 @@
       <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Este mes</span><span class="font-bold text-emerald-600">${{ ingresos_mes }}</span></div>
     </div>
     <!-- Acciones rápidas -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col">
       <h3 class="font-bold text-slate-900 mb-3">⚡ Acciones rápidas</h3>
-      <div class="flex flex-col gap-2">
-        <a href="{% url 'patients:create' %}" class="text-sm text-sky-600 hover:underline font-semibold">+ Nuevo paciente</a>
-        <a href="{% url 'clinical:expediente_list' %}" class="text-sm text-sky-600 hover:underline font-semibold">📋 Expedientes dentales</a>
-        <a href="{% url 'billing:list' %}" class="text-sm text-sky-600 hover:underline font-semibold">$ Facturación</a>
+      <div class="flex flex-col gap-2 flex-1">
+        <a href="{% url 'patients:create' %}" class="block w-full text-center bg-sky-500 hover:bg-sky-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold shadow">+ Nuevo paciente</a>
+        <a href="{% url 'clinical:expediente_list' %}" class="block w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-semibold">📋 Expedientes dentales</a>
+        <a href="{% url 'billing:list' %}" class="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold shadow">$ Facturación</a>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- Top servicios -->
