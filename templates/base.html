@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,17 +16,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
+body[data-theme="azul"]{background:linear-gradient(135deg,#082f49 0%,#0c4a6e 45%,#0ea5e9 100%);background-attachment:fixed}
+body[data-theme="verde"]{background:linear-gradient(135deg,#022c22 0%,#065f46 45%,#34d399 100%);background-attachment:fixed}
+body[data-theme="rosa"]{background:linear-gradient(135deg,#500724 0%,#9d174d 45%,#f472b6 100%);background-attachment:fixed}
+body[data-theme="azul"] #sidebar{background:linear-gradient(180deg,rgba(8,47,73,.97),rgba(7,89,133,.94))!important}
+body[data-theme="verde"] #sidebar{background:linear-gradient(180deg,rgba(2,44,34,.97),rgba(6,95,70,.94))!important}
+body[data-theme="rosa"] #sidebar{background:linear-gradient(180deg,rgba(80,7,36,.97),rgba(157,23,77,.94))!important}
+body[data-theme="azul"] header,body[data-theme="verde"] header,body[data-theme="rosa"] header{background:rgba(2,6,23,.55)!important;backdrop-filter:blur(10px)}
+</style>
 <style>
-body[data-theme="azul"]{background:linear-gradient(135deg,#0c4a6e 0%,#0369a1 45%,#38bdf8 100%);min-height:100vh}
-body[data-theme="verde"]{background:linear-gradient(135deg,#064e3b 0%,#059669 45%,#34d399 100%);min-height:100vh}
-body[data-theme="rosa"]{background:linear-gradient(135deg,#831843 0%,#db2777 45%,#f9a8d4 100%);min-height:100vh}
-body[data-theme="azul"] aside,body[data-theme="verde"] aside,body[data-theme="rosa"] aside,
-body[data-theme="azul"] header,body[data-theme="verde"] header,body[data-theme="rosa"] header{background:rgba(255,255,255,.92)!important;backdrop-filter:blur(10px)}
-body[data-theme="azul"] aside a,body[data-theme="verde"] aside a,body[data-theme="rosa"] aside a{color:#334155!important}
-body[data-theme="azul"] .bg-white,body[data-theme="verde"] .bg-white,body[data-theme="rosa"] .bg-white{background:#ffffff!important}
-body[data-theme="azul"] .text-slate-900,body[data-theme="verde"] .text-slate-900,body[data-theme="rosa"] .text-slate-900{color:#0f172a!important}
+body[data-theme="azul"]{background:linear-gradient(135deg,#082f49 0%,#0c4a6e 45%,#0ea5e9 100%);background-attachment:fixed}
+body[data-theme="verde"]{background:linear-gradient(135deg,#022c22 0%,#065f46 45%,#34d399 100%);background-attachment:fixed}
+body[data-theme="rosa"]{background:linear-gradient(135deg,#500724 0%,#9d174d 45%,#f472b6 100%);background-attachment:fixed}
+body[data-theme="azul"] aside{background:linear-gradient(180deg,rgba(8,47,73,.96),rgba(7,89,133,.92))!important;border-right:1px solid rgba(56,189,248,.25)}
+body[data-theme="verde"] aside{background:linear-gradient(180deg,rgba(2,44,34,.96),rgba(6,95,70,.92))!important;border-right:1px solid rgba(52,211,153,.25)}
+body[data-theme="rosa"] aside{background:linear-gradient(180deg,rgba(80,7,36,.96),rgba(157,23,77,.92))!important;border-right:1px solid rgba(244,114,182,.25)}
+body[data-theme="azul"] header,body[data-theme="verde"] header,body[data-theme="rosa"] header{background:rgba(2,6,23,.5)!important;backdrop-filter:blur(10px)}
+body[data-theme] aside{backdrop-filter:blur(8px)}
 </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen" data-theme="{{ tema|default:'dark' }}">
