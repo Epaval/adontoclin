@@ -25,12 +25,13 @@
 <body>
   <table class="header"><tr>
     <td style="border:none;width:60%">
-      <div class="clinic">ODONTOCLIN</div>
+      {% if logo_b64 %}<img src="data:{{ logo_mime }};base64,{{ logo_b64 }}" style="height:56px;margin-bottom:6px">{% endif %}
+      <div class="clinic">{{ datos.nombre|default:"ODONTOCLIN" }}</div>
       <div class="clinic-sub">
         RIF: {{ datos.rif|default:"J-00000000-0" }}<br>
         {{ datos.direccion|default:"Av. Principal, Valencia Edo. Carabobo" }}<br>
         Tlf: {{ datos.telefono|default:"0241-0000000" }} · {{ datos.email|default:"contacto@odontoclin.com" }}<br>
-        <em>"Sonríe con salud"</em>
+        <em>"{{ datos.lema|default:"Sonríe con salud" }}"</em>
       </div>
     </td>
     <td style="border:none" class="fact-box">
@@ -86,6 +87,6 @@
     </tr>
   </table>
 
-  <div class="footer">Gracias por su preferencia. Este documento fue generado electrónicamente por ODONTOCLIN.</div>
+  <div class="footer">Gracias por su preferencia. Este documento fue generado electrónicamente por {{ datos.nombre|default:"ODONTOCLIN" }}.</div>
 </body>
 </html>
