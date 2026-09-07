@@ -11,6 +11,24 @@ def validar_logo(value):
         raise ValidationError("Formato permitido: PNG, JPG o SVG")
 
 
+def _convertir_webp(fieldfile):
+    """Convierte WebP a PNG para compatibilidad con PDFs."""
+    if not fieldfile:
+        return fieldfile
+    try:
+        from PIL import Image
+        import os
+        if fieldfile.name.lower().endswith(".webp"):
+            img = Image.open(fieldfile.path).convert("RGBA")
+            nuevo = fieldfile.path.rsplit(".", 1)[0] + ".png"
+            img.save(nuevo, "PNG")
+            os.remove(fieldfile.path)
+            fieldfile.name = os.path.basename(nuevo)
+    except Exception:
+        pass
+    return fieldfile
+
+
 class DatosLaboratorio(models.Model):
     """Datos del laboratorio para encabezados de PDF (registro unico)"""
 

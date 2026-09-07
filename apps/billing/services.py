@@ -111,9 +111,25 @@ def generar_pdf_factura(factura):
     }
     try:
         from apps.core.models import DatosLaboratorio
-        context["datos"] = DatosLaboratorio.objects.first()
+        datos = DatosLaboratorio.objects.first()
+        context["datos"] = datos
+        import base64
+        import os
+
+        def _b64(fieldfile):
+            if not fieldfile or not os.path.exists(fieldfile.path):
+                return None, None
+            ext = fieldfile.name.lower().rsplit(".", 1)[-1]
+            mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "svg": "image/svg+xml"}.get(ext, "image/jpeg")
+            with open(fieldfile.path, "rb") as f:
+                return base64.b64encode(f.read()).decode(), mime
+
+        context["logo_b64"], context["logo_mime"] = _b64(datos.logo) if datos else (None, None)
+        context["firma_b64"], context["firma_mime"] = _b64(datos.firma_imagen) if datos else (None, None)
+        context["sello_b64"], context["sello_mime"] = _b64(datos.sello_imagen) if datos else (None, None)
     except Exception:
         context["datos"] = None
+        context["logo_b64"] = context["firma_b64"] = context["sello_b64"] = None
     html = render_to_string("reports/factura.html", context)
     pdf = io.BytesIO()
     pisa.CreatePDF(io.StringIO(html), dest=pdf)
