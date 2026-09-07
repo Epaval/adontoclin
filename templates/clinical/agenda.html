@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load odonto_tags %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-4 pb-10">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-slate-900">📅 Agenda · {{ mes_nombre }}</h1>
+      <p class="text-xs text-slate-500 mt-1">🕐 Fecha del servidor (este equipo, sin internet): <strong>{{ hoy|date:"d/m/Y H:i" }}</strong></p>
+    </div>
+    <div class="flex gap-2">
+      <a href="?mes={{ mes_prev }}" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">← Anterior</a>
+      <a href="?" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold">Hoy</a>
+      <a href="?mes={{ mes_next }}" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">Siguiente →</a>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="grid grid-cols-7 bg-slate-100 text-xs font-bold uppercase text-slate-500">
+      <div class="p-2 text-center">Lun</div><div class="p-2 text-center">Mar</div><div class="p-2 text-center">Mié</div>
+      <div class="p-2 text-center">Jue</div><div class="p-2 text-center">Vie</div><div class="p-2 text-center">Sáb</div><div class="p-2 text-center">Dom</div>
+    </div>
+    {% for semana in semanas %}
+    <div class="grid grid-cols-7 border-t border-slate-100">
+      {% for dia in semana %}
+      <div class="min-h-24 p-1.5 border-r border-slate-100 last:border-r-0 {% if not dia %}bg-slate-50{% endif %}">
+        {% if dia %}
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-bold {% if hoy.day == dia %}text-sky-500 text-base{% else %}text-slate-500{% endif %}">{{ dia }}</span>
+          <a href="{% url 'clinical:cita_nueva' %}?fecha={{ mes_actual }}-{{ dia|stringformat:'02d' }}T09:00" class="text-sky-500 hover:text-sky-600 text-sm font-bold" title="Nueva cita">+</a>
+        </div>
+        {% for c in por_dia|get_item:dia %}
+        <a href="{% url 'patients:historial' c.expediente.paciente.pk %}" class="block mb-1 px-1.5 py-1 rounded text-[10px] font-semibold truncate
+          {% if c.estado == 'atendida' %}bg-emerald-100 text-emerald-700{% elif c.estado == 'programada' %}bg-sky-100 text-sky-700{% elif c.estado == 'ausente' %}bg-amber-100 text-amber-700{% else %}bg-red-100 text-red-700{% endif %}"
+          title="{{ c.fecha|date:'H:i' }} · {{ c.expediente.paciente.full_name }}">
+          {{ c.fecha|date:"H:i" }} {{ c.expediente.paciente.full_name }}
+        </a>
+        {% endfor %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="text-xs text-slate-500">Clic en "+" del día para agendar · clic en una cita para ir al historial del paciente.</p>
+</div>
+{% endblock %}

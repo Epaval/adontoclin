@@ -334,3 +334,93 @@ class ServicioDentalUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "form.html"
     success_url = reverse_lazy("clinical:servicio_list")
     extra_context = {"title": "Editar servicio dental"}
+
+
+class AgendaView(LoginRequiredMixin, TemplateView):
+    """Calendario mensual de citas (100% offline: reloj del servidor)."""
+    template_name = "clinical/agenda.html"
+
+    def get_context_data(self, **kwargs):
+        import calendar as cal
+        from datetime import date
+
+        ctx = super().get_context_data(**kwargs)
+        hoy = date.today()
+        try:
+            y, m = map(int, self.request.GET.get("mes", "").split("-"))
+        except Exception:
+            y, m = hoy.year, hoy.month
+        _, ndias = cal.monthrange(y, m)
+        offset = date(y, m, 1).weekday()
+
+        citas = (
+            CitaDental.objects.filter(fecha__year=y, fecha__month=m)
+            .select_related("expediente__paciente")
+            .order_by("fecha")
+        )
+        por_dia = {}
+        for c in citas:
+            por_dia.setdefault(c.fecha.day, []).append(c)
+
+        celdas = [None] * offset + list(range(1, ndias + 1))
+        while len(celdas) % 7:
+            celdas.append(None)
+        semanas = [celdas[i:i + 7] for i in range(0, len(celdas), 7)]
+
+        pm = m - 1 or 12
+        py = y if m > 1 else y - 1
+        nm = m + 1 if m < 12 else 1
+        ny = y if m < 12 else y + 1
+        ctx.update({
+            "semanas": semanas, "por_dia": por_dia,
+            "mes_nombre": date(y, m, 1).strftime("%B %Y").title(),
+            "mes_actual": f"{y}-{m:02d}",
+            "mes_prev": f"{py}-{pm:02d}", "mes_next": f"{ny}-{nm:02d}",
+            "hoy": hoy,
+        })
+        return ctx
+
+
+class CitaNuevaView(LoginRequiredMixin, TemplateView):
+    """Nueva cita desde agenda: buscador de paciente + control de solapes."""
+    template_name = "clinical/cita_nueva.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["fecha_ini"] = self.request.GET.get("fecha", "")
+        return ctx
+
+    def post(self, request):
+        from datetime import datetime, timedelta
+
+        paciente_pk = request.POST.get("paciente")
+        fecha_str = request.POST.get("fecha", "")
+        motivo = request.POST.get("motivo", "").strip()
+        estado = request.POST.get("estado", "programada")
+        paciente = get_object_or_404(Paciente, pk=paciente_pk) if paciente_pk else None
+        try:
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%dT%H:%M")
+        except Exception:
+            fecha = None
+        if paciente is None or fecha is None:
+            messages.error(request, "Seleccione paciente y fecha/hora válidos.")
+            return redirect("clinical:agenda")
+        solape = CitaDental.objects.filter(
+            fecha__gte=fecha - timedelta(minutes=30),
+            fecha__lte=fecha + timedelta(minutes=30),
+        ).exclude(estado="cancelada").first()
+        if solape:
+            messages.error(
+                request,
+                f"Solape: ya hay cita a las {solape.fecha:%H:%M} de {solape.expediente.paciente.full_name}.",
+            )
+            return redirect("clinical:agenda")
+        expediente, _ = ExpedienteDental.objects.get_or_create(
+            paciente=paciente, defaults={"creado_por": request.user}
+        )
+        CitaDental.objects.create(
+            expediente=expediente, fecha=fecha, motivo=motivo,
+            estado=estado, creado_por=request.user,
+        )
+        messages.success(request, f"Cita de {paciente.full_name} agendada {fecha:%d/%m %H:%M}.")
+        return redirect("clinical:agenda")

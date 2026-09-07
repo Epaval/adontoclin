@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+    <h1 class="text-xl font-bold text-slate-900">📅 Nueva cita</h1>
+    <form method="post" class="mt-5 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Buscar paciente</label>
+        <input type="text" id="buscador" autocomplete="off" placeholder="Escriba nombre, CI o teléfono..."
+               class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900">
+        <input type="hidden" name="paciente" id="paciente-id" required>
+        <p id="paciente-sel" class="text-xs text-emerald-600 font-semibold mt-1"></p>
+        <div id="resultados" class="mt-1 border border-slate-200 rounded-lg overflow-hidden hidden bg-white"></div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Fecha y hora</label>
+        <p class="text-[11px] text-slate-400 mb-1">Usa el reloj de este equipo — no requiere internet.</p>
+        <input type="datetime-local" name="fecha" value="{{ fecha_ini }}" required
+               class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Motivo</label>
+        <textarea name="motivo" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Estado</label>
+        <select name="estado" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900">
+          <option value="programada">Programada</option>
+          <option value="atendida">Atendida</option>
+          <option value="ausente">Ausente</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="flex gap-3 pt-3 border-t border-slate-200">
+        <button class="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm">Agendar cita</button>
+        <a href="{% url 'clinical:agenda' %}" class="px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-semibold">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const buscador = document.getElementById('buscador');
+const resultados = document.getElementById('resultados');
+let timer = null;
+buscador.addEventListener('input', () => {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    const q = buscador.value.trim();
+    if (q.length < 2) { resultados.classList.add('hidden'); return; }
+    const r = await fetch('/pacientes/api/buscar/?q=' + encodeURIComponent(q));
+    const data = await r.json();
+    resultados.innerHTML = '';
+    (data.results || data).forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'px-3 py-2 hover:bg-sky-50 cursor-pointer text-sm text-slate-700';
+      div.textContent = p.nombre + ' · CI ' + (p.ci || '-') + ' · ' + (p.telefono || '-');
+      div.onclick = () => {
+        document.getElementById('paciente-id').value = p.id;
+        document.getElementById('paciente-sel').textContent = '✔ ' + p.nombre;
+        buscador.value = p.nombre;
+        resultados.classList.add('hidden');
+      };
+      resultados.appendChild(div);
+    });
+    resultados.classList.remove('hidden');
+  }, 250);
+});
+</script>
+{% endblock %}

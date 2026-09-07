@@ -74,6 +74,7 @@ ESTADO_CITA = [
     ("programada", "Programada"),
     ("atendida", "Atendida"),
     ("cancelada", "Cancelada"),
+    ("ausente", "Ausente"),
 ]
 
 
