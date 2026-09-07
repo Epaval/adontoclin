@@ -76,4 +76,13 @@ class PacienteHistorialView(LoginRequiredMixin, PermissionRequiredMixin, DetailV
         except Exception:
             context["expediente"] = None
             context["citas"] = []
+        from apps.billing.models import Factura
+        from apps.clinical.models import HistorialDiente
+        context["stats_historial"] = {
+            "citas": len(context["citas"]),
+            "dientes": HistorialDiente.objects.filter(paciente=self.object).values("diente_fdi").distinct().count(),
+            "facturado": Factura.objects.filter(
+                cita__expediente__paciente=self.object, estado="emitida"
+            ).aggregate(t=__import__("django.db.models", fromlist=["Sum"]).Sum("total"))["t"] or 0,
+        }
         return context

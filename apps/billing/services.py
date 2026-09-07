@@ -27,6 +27,17 @@ def _generar_numero_control():
     return f"00-{maximo + 1:05d}"
 
 
+def _generar_numero():
+    ultimo = Factura.objects.order_by("-id").values_list("numero", flat=True).first()
+    n = 1
+    if ultimo:
+        try:
+            n = int(ultimo.split("-")[1]) + 1
+        except Exception:
+            n = Factura.objects.count() + 1
+    return f"F-{n:06d}"
+
+
 def generar_factura(cita, usuario, descuento=Decimal("0")):
     """Crea factura en $ desde una cita dental (Bs con la tasa del día)."""
     from apps.core.models import TasaCambio
