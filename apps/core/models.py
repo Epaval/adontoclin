@@ -8,7 +8,7 @@ from django.db import models
 def validar_logo(value):
     ext = value.name.rsplit(".", 1)[-1].lower()
     if ext not in ("png", "jpg", "jpeg", "svg"):
-        raise ValidationError("Formato permitido: PNG, JPG o SVG")
+        raise ValidationError("Formato permitido: PNG, JPG, SVG o WebP")
 
 
 def _convertir_webp(fieldfile):
@@ -41,7 +41,7 @@ class DatosLaboratorio(models.Model):
     lema = models.CharField(max_length=120, blank=True)
     simbolo_moneda = models.CharField(max_length=5, default="Bs.")
     logo = models.FileField(
-        "Logo de la clínica (PNG, JPG o SVG)",
+        "Logo de la clínica (PNG, JPG, SVG o WebP)",
         upload_to="logo/",
         null=True,
         blank=True,
