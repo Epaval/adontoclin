@@ -79,9 +79,7 @@
               <a href="{% url 'clinical:cita_update' cita.pk %}" class="text-sky-600 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg">✏️ Editar cita</a>
               <a href="{% url 'clinical:receta_create' cita.pk %}" class="text-violet-600 bg-violet-50 hover:bg-violet-100 px-3 py-1.5 rounded-lg">📝 Receta</a>
               {% if cita.estado != 'cancelada' %}
-              <form method="post" action="{% url 'clinical:cita_anular' cita.pk %}" onsubmit="return confirm('¿Anular esta cita?')">{% csrf_token %}
-                <button class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg">🚫 Anular</button>
-              </form>
+              <button type="button" onclick="abrirConfirm('{% url 'clinical:cita_anular' cita.pk %}')" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg">🚫 Anular</button>
               {% endif %}
             </div>
           </div>

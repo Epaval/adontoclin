@@ -402,7 +402,14 @@ class AgendaView(LoginRequiredMixin, TemplateView):
             citas_dia = por_dia.get(dia_sel, [])
         except Exception:
             dia_sel = None
+        if (y, m) < (hoy.year, hoy.month):
+            dias_pasados = set(range(1, ndias + 1))
+        elif (y, m) == (hoy.year, hoy.month):
+            dias_pasados = set(range(1, hoy.day))
+        else:
+            dias_pasados = set()
         ctx.update({
+            "dias_pasados": dias_pasados,
             "dia_sel": dia_sel, "citas_dia": citas_dia,
             "semanas": semanas, "por_dia": por_dia,
             "mes_nombre": f"{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m-1]} {y}",

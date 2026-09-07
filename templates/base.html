@@ -426,5 +426,46 @@ body[data-theme] aside{backdrop-filter:blur(8px)}
     });
   </script>
 
+
+<style>
+.mc-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,23,.7);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mc-backdrop.abierto{display:flex}
+.mc-box{background:#1e293b;border:1px solid #334155;border-radius:20px;max-width:400px;width:100%;padding:28px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.6);animation:mcIn .18s ease}
+@keyframes mcIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.mc-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:16px;background:linear-gradient(135deg,#dc2626,#f87171);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 20px rgba(220,38,38,.35)}
+.mc-title{font-size:17px;font-weight:800;color:#f1f5f9;margin-bottom:6px}
+.mc-text{font-size:13px;color:#94a3b8;margin-bottom:20px}
+.mc-actions{display:flex;gap:10px;justify-content:center}
+.mc-cancel{padding:10px 20px;border-radius:12px;background:#334155;color:#cbd5e1;font-size:13px;font-weight:700}
+.mc-cancel:hover{background:#475569}
+.mc-ok{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(220,38,38,.35)}
+.mc-ok:hover{filter:brightness(1.1)}
+</style>
+<div class="mc-backdrop" id="modal-confirm">
+  <div class="mc-box">
+    <div class="mc-icon">🚫</div>
+    <div class="mc-title">¿Anular esta cita?</div>
+    <p class="mc-text">La cita pasará a estado <strong>Cancelada</strong> y liberará su horario en la agenda.</p>
+    <form id="mc-form" method="post">
+      {% csrf_token %}
+      <div class="mc-actions">
+        <button type="button" class="mc-cancel" onclick="cerrarConfirm()">Cancelar</button>
+        <button type="submit" class="mc-ok">Sí, anular</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function abrirConfirm(url) {
+  document.getElementById('mc-form').action = url;
+  document.getElementById('modal-confirm').classList.add('abierto');
+}
+function cerrarConfirm() {
+  document.getElementById('modal-confirm').classList.remove('abierto');
+}
+document.getElementById('modal-confirm').addEventListener('click', function(e) {
+  if (e.target === this) cerrarConfirm();
+});
+</script>
 </body>
 </html>
