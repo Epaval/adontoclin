@@ -13,10 +13,10 @@ class DetalleFacturaInline(admin.TabularInline):
 class FacturaAdmin(admin.ModelAdmin):
     list_display = ["numero", "numero_control", "paciente", "estado", "total", "tasa", "fecha_creacion"]
     list_filter = ["estado", "metodo_pago"]
-    search_fields = ["numero", "numero_control", "orden__expediente__paciente__nombres", "orden__expediente__paciente__apellidos"]
-    readonly_fields = ["numero", "numero_control", "orden", "subtotal", "total", "tasa", "fecha_creacion"]
+    search_fields = ["numero", "numero_control", "cita__expediente__paciente__nombres", "cita__expediente__paciente__apellidos"]
+    readonly_fields = ["numero", "numero_control", "cita", "subtotal", "total", "tasa", "fecha_creacion"]
     inlines = [DetalleFacturaInline]
 
     @admin.display(description="Paciente")
     def paciente(self, obj):
-        return obj.orden.expediente.paciente
+        return obj.cita.expediente.paciente

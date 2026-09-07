@@ -14,7 +14,7 @@ from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from apps.doctors.models import Medico
-from apps.clinical.models import ServicioDental, ExpedienteDental, OrdenDental
+from apps.clinical.models import ServicioDental, ExpedienteDental, CitaDental
 from apps.patients.models import Paciente
 
 from .forms import (
@@ -39,7 +39,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         from django.db.models import Count, Sum
 
         from apps.billing.models import DetalleFactura, Factura
-        from apps.clinical.models import ExpedienteDental, OrdenDental, ServicioDental
+        from apps.clinical.models import ExpedienteDental, CitaDental, ServicioDental
         from apps.doctors.models import Medico
         from apps.patients.models import Paciente
 
@@ -53,10 +53,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "pacientes_del_dia": Paciente.objects.filter(
                 expedientes_dentales__fecha_creacion__date=hoy
             ).distinct().count(),
-            "ordenes_abiertas": OrdenDental.objects.filter(
+            "ordenes_abiertas": CitaDental.objects.filter(
                 estado__in=["abierta", "en_proceso"]
             ).count(),
-            "ordenes_cerradas_hoy": OrdenDental.objects.filter(
+            "ordenes_cerradas_hoy": CitaDental.objects.filter(
                 estado="completada", fecha_creacion__date=hoy
             ).count(),
             "ingresos_hoy": Factura.objects.filter(
@@ -99,7 +99,7 @@ class ConfiguracionInicialView(View):
 
         # Roles siempre; catálogo si el cliente lo desea
         if data.get("cargar_catalogo"):
-            call_command("seed_catalogo", verbosity=0)
+            _seed_dental()
 
         user = Empleado.objects.create_superuser(
             nombre_usuario=data["nombre_usuario"],
@@ -259,3 +259,24 @@ class RecuperarNuevaClaveView(View):
             return redirect("accounts:login")
 
         return render(request, "accounts/recuperar_nueva.html", {"form": form}, status=400)
+
+
+def _seed_dental():
+    """Catálogo inicial de servicios dentales (reemplaza seed de laboratorio)."""
+    from apps.clinical.models import ServicioDental
+    servs = [
+        ("LIM", "Limpieza dental (profilaxis)", "Limpieza profunda con ultrasonido", "30.00"),
+        ("OBT", "Obturación (empaste)", "Resina compuesta", "40.00"),
+        ("EXT", "Extracción simple", "Extracción de pieza dental", "50.00"),
+        ("EXTC", "Extracción compleja", "Muela del juicio / incluida", "120.00"),
+        ("END", "Endodoncia", "Tratamiento de conducto", "180.00"),
+        ("COR", "Corona dental", "Porcelana o zirconio", "350.00"),
+        ("IMP", "Implante dental", "Implante de titanio + corona", "800.00"),
+        ("ORT", "Ortodoncia", "Brackets metálicos (mensual)", "60.00"),
+        ("BLA", "Blanqueamiento dental", "Blanqueamiento en consultorio", "250.00"),
+        ("RX", "Radiografía periapical", "Placa individual", "10.00"),
+    ]
+    for c, n, d, p in servs:
+        ServicioDental.objects.get_or_create(
+            codigo=c, defaults={"nombre": n, "descripcion": d, "precio_usd": p}
+        )

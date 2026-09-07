@@ -62,9 +62,13 @@ class PacienteHistorialView(LoginRequiredMixin, PermissionRequiredMixin, DetailV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["expedientes"] = (
-            self.object.expedientes_dentales
-            .prefetch_related("historial_dientes", "ordenes__items__servicio")
-            .order_by("-fecha_creacion")
-        )
+        try:
+            expediente = self.object.expediente_dental
+            context["expediente"] = expediente
+            context["citas"] = expediente.citas.prefetch_related(
+                "dientes", "items__servicio"
+            ).order_by("-fecha")
+        except Exception:
+            context["expediente"] = None
+            context["citas"] = []
         return context

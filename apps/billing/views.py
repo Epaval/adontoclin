@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from apps.clinical.models import OrdenDental
+from apps.clinical.models import CitaDental
 
 from .models import Factura
 from .services import generar_factura, generar_pdf_factura
@@ -20,7 +20,7 @@ class FacturaListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        qs = Factura.objects.select_related("orden__expediente__paciente", "creado_por")
+        qs = Factura.objects.select_related("cita__expediente__paciente", "creado_por")
         q = self.request.GET.get("q", "").strip()
         if q:
             for term in q.split():
@@ -55,10 +55,10 @@ class FacturaCreateView(LoginRequiredMixin, PermissionRequiredMixin, View):
     """Genera factura en $ desde una orden dental."""
     permission_required = "billing.add_factura"
 
-    def post(self, request, orden_pk):
-        orden = get_object_or_404(OrdenDental, pk=orden_pk)
+    def post(self, request, cita_pk):
+        cita = get_object_or_404(CitaDental, pk=cita_pk)
         try:
-            factura = generar_factura(orden, request.user)
+            factura = generar_factura(cita, request.user)
             messages.success(request, f"Factura {factura.numero} generada por ${factura.total}")
             return redirect("billing:detail", pk=factura.pk)
         except ValueError as exc:

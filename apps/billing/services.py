@@ -27,7 +27,7 @@ def _generar_numero_control():
     return f"00-{maximo + 1:05d}"
 
 
-def generar_factura(orden, usuario, descuento=Decimal("0")):
+def generar_factura(cita, usuario, descuento=Decimal("0")):
     """Crea una factura en $ desde una orden dental (se convierte a Bs con la tasa)."""
     from apps.core.models import TasaCambio
 
@@ -40,7 +40,7 @@ def generar_factura(orden, usuario, descuento=Decimal("0")):
         )
         factura.save()
         subtotal = Decimal("0")
-        for item in orden.items.select_related("servicio").all():
+        for item in cita.items.select_related("servicio").all():
             DetalleFactura.objects.create(
                 factura=factura,
                 servicio=item.servicio,
@@ -55,7 +55,7 @@ def generar_factura(orden, usuario, descuento=Decimal("0")):
         factura.subtotal = subtotal
         factura.total = max(subtotal - descuento, Decimal("0"))
         factura.save(update_fields=["subtotal", "total", "tasa"])
-        orden.estado = "completada"
+        cita.estado = "completada"
         orden.save(update_fields=["estado"])
         return factura
 

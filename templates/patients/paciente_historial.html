@@ -1,44 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-5xl mx-auto space-y-4">
-  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex items-center justify-between">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex items-center justify-between flex-wrap gap-3">
     <div>
-      <h1 class="text-xl font-bold text-slate-900">{{ paciente.full_name }}</h1>
+      <h1 class="text-xl font-bold text-slate-900">{{ paciente.full_name }}
+        <a href="{% url 'patients:update' paciente.pk %}" class="text-xs text-sky-600 font-semibold ml-2">✏️ Editar datos</a>
+      </h1>
       <p class="text-sm text-slate-500">CI: {{ paciente.ci_efectivo|default:"-" }} · Tel: {{ paciente.telefono_efectivo|default:"-" }} · {{ paciente.edad }} años</p>
       {% if paciente.es_menor and paciente.representante %}
-      <p class="text-xs text-sky-600 mt-1">Representante: {{ paciente.representante.full_name }} · CI {{ paciente.representante.representante.ci|default:paciente.representante.ci|default:"-" }}</p>
+      <p class="text-xs text-sky-600 mt-1">Representante: {{ paciente.representante.full_name }} · CI {{ paciente.representante.ci|default:"-" }} · Tel {{ paciente.representante.telefono|default:"-" }}</p>
       {% endif %}
     </div>
-    <a href="{% url 'clinical:odontograma' paciente.pk %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold">🦷 Odontograma</a>
+    <div class="flex gap-2">
+      <a href="{% url 'clinical:odontograma' paciente.pk %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">🦷 Odontograma</a>
+      <a href="{% url 'clinical:cita_create' paciente.pk %}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">+ Nueva cita</a>
+    </div>
   </div>
 
-  {% for exp in expedientes %}
+  {% if expediente %}
   <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
     <div class="flex items-center justify-between">
-      <h2 class="font-bold text-slate-900">Consulta #{{ exp.pk }} · {{ exp.fecha_creacion|date:"d/m/Y H:i" }}</h2>
-      <span class="text-xs text-slate-500">{{ exp.creado_por.nombre_usuario }}</span>
+      <h2 class="font-bold text-slate-900">📋 Historia clínica general</h2>
+      <a href="{% url 'clinical:expediente_update' expediente.pk %}" class="text-xs text-sky-600 font-semibold">✏️ Editar historia</a>
     </div>
-    {% if exp.motivo %}<p class="text-sm text-slate-600 mt-2"><strong>Motivo:</strong> {{ exp.motivo }}</p>{% endif %}
-    {% if exp.patologias %}<p class="text-sm text-slate-600"><strong>Patologías:</strong> {{ exp.patologias }}</p>{% endif %}
-    {% if exp.alergias %}<p class="text-sm text-red-600"><strong>Alergias:</strong> {{ exp.alergias }}</p>{% endif %}
-    {% if exp.operaciones %}<p class="text-sm text-slate-600"><strong>Operaciones:</strong> {{ exp.operaciones }}</p>{% endif %}
-    {% if exp.historial_dientes.all %}
+    <div class="grid md:grid-cols-2 gap-3 mt-3 text-sm">
+      <p class="text-slate-600"><strong>Patologías:</strong> {{ expediente.patologias|default:"-" }}</p>
+      <p class="text-red-600"><strong>Alergias:</strong> {{ expediente.alergias|default:"-" }}</p>
+      <p class="text-slate-600"><strong>Operaciones:</strong> {{ expediente.operaciones|default:"-" }}</p>
+      <p class="text-slate-600"><strong>Notas:</strong> {{ expediente.notas|default:"-" }}</p>
+    </div>
+  </div>
+  {% else %}
+  <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center">
+    <p class="text-slate-500 text-sm mb-3">Este paciente aún no tiene historia clínica.</p>
+    <a href="{% url 'clinical:expediente_create' paciente.pk %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">Crear historia clínica</a>
+  </div>
+  {% endif %}
+
+  {% for cita in citas %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <h2 class="font-bold text-slate-900">🗓 Cita #{{ cita.pk }} · {{ cita.fecha|date:"d/m/Y H:i" }}
+        <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold {% if cita.estado == 'atendida' %}bg-emerald-100 text-emerald-700{% elif cita.estado == 'programada' %}bg-sky-100 text-sky-700{% else %}bg-red-100 text-red-700{% endif %}">{{ cita.get_estado_display }}</span>
+      </h2>
+      <div class="flex gap-3">
+        {% if cita.archivo_adjunto %}<a href="{{ cita.archivo_adjunto.url }}" target="_blank" class="text-xs text-slate-500 font-semibold">📎 Adjunto</a>{% endif %}
+        <a href="{% url 'clinical:cita_update' cita.pk %}" class="text-xs text-sky-600 font-semibold">✏️ Editar cita</a>
+        <form method="post" action="{% url 'billing:create' cita_pk=cita.pk %}">{% csrf_token %}<button class="text-xs text-emerald-600 font-semibold">$ Facturar</button></form>
+      </div>
+    </div>
+    {% if cita.motivo %}<p class="text-sm text-slate-600 mt-2"><strong>Motivo:</strong> {{ cita.motivo }}</p>{% endif %}
+    {% if cita.notas %}<p class="text-sm text-slate-600"><strong>Notas:</strong> {{ cita.notas }}</p>{% endif %}
+    {% if cita.dientes.all %}
     <div class="mt-3 flex flex-wrap gap-2">
-      {% for h in exp.dientes_unicos %}
+      {% for h in cita.dientes.all %}
       <span class="px-2 py-1 rounded-full text-xs font-semibold text-white" style="background:{{ h.color }}">🦷 {{ h.diente_fdi }}: {{ h.get_tipo_display }} · {{ h.fecha|date:"d/m H:i" }}</span>
       {% endfor %}
     </div>
     {% endif %}
-    {% for ord in exp.ordenes.all %}
-    <div class="mt-3 text-sm text-slate-600">
-      <strong>Orden #{{ ord.pk }} ({{ ord.get_estado_display }}):</strong>
-      {% for it in ord.items.all %}{{ it.servicio.nombre }}{% if it.diente_fdi %} ({{ it.diente_fdi }}){% endif %} ×{{ it.cantidad }}{% if not forloop.last %}, {% endif %}{% endfor %}
-      · Total: ${{ ord.total_usd }}
-    </div>
-    {% endfor %}
+    {% if cita.items.all %}
+    <p class="text-sm text-slate-600 mt-2"><strong>Servicios:</strong>
+      {% for it in cita.items.all %}{{ it.servicio.nombre }}{% if it.diente_fdi %} ({{ it.diente_fdi }}){% endif %} ×{{ it.cantidad }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      · Total: ${{ cita.total_usd }}
+    </p>
+    {% endif %}
   </div>
   {% empty %}
-  <div class="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500">Sin consultas registradas.</div>
+  <div class="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500">Sin citas registradas.</div>
   {% endfor %}
 </div>
 {% endblock %}

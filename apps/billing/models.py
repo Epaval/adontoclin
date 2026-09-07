@@ -27,8 +27,8 @@ class Factura(models.Model):
         help_text="Formato fiscal: 00-NNNNN (auto-generado)",
     )
 
-    orden = models.ForeignKey(
-        "clinical.OrdenDental",
+    cita = models.ForeignKey(
+        "clinical.CitaDental",
         on_delete=models.PROTECT,
         related_name="facturas",
     )
@@ -72,7 +72,7 @@ class Factura(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return f"{self.numero} · {self.orden.expediente.paciente}"
+        return f"{self.numero} · {self.cita.expediente.paciente}"
 
 
 class DetalleFactura(models.Model):

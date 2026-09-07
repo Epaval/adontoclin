@@ -53,7 +53,7 @@ class BusquedaGlobalView(LoginRequiredMixin, TemplateView):
         ctx["q"] = q
         if q and len(q) >= 2:
             from apps.patients.models import Paciente
-            from apps.clinical.models import OrdenDental as _OrdenDental
+            from apps.clinical.models import CitaDental as _CitaDental
             from apps.clinical.models import ServicioDental
             from django.db.models import Q
 
@@ -63,7 +63,7 @@ class BusquedaGlobalView(LoginRequiredMixin, TemplateView):
                 | Q(representante__telefono__icontains=q)
             ).filter(activo=True).select_related("representante")[:10]
 
-            ctx["ordenes"] = _OrdenDental.objects.filter(
+            ctx["ordenes"] = _CitaDental.objects.filter(
                 Q(expediente__paciente__nombres__icontains=q)
                 | Q(expediente__paciente__apellidos__icontains=q)
                 | Q(expediente__paciente__ci__icontains=q)
