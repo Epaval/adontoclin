@@ -42,14 +42,55 @@ class EstadisticasView(SoloSuperUser, TemplateView):
     template_name = "reports/estadisticas.html"
 
     def get_context_data(self, **kwargs):
+        import json
+        from datetime import date, timedelta
+
+        from django.db.models import Count, Sum
+
+        from apps.billing.models import DetalleFactura, Factura
+        from apps.clinical.models import CitaDental, HistorialDiente
+        from apps.patients.models import Paciente
+
         ctx = super().get_context_data(**kwargs)
-        ctx.update({
-            "total_pacientes": __import__("apps.patients.models", fromlist=["Paciente"]).Paciente.objects.filter(activo=True).count(),
-            "total_servicios": ServicioDental.objects.filter(activo=True).count(),
-            "total_facturas": Factura.objects.count(),
-            "ingresos_usd": Factura.objects.filter(estado="emitida").aggregate(t=models.Sum("total"))["t"] or Decimal("0"),
-        })
+        hoy = date.today()
+
+        top = list(DetalleFactura.objects.values("servicio__nombre")
+                   .annotate(total=Count("id")).order_by("-total")[:10])
+        ctx["top_labels"] = json.dumps([t["servicio__nombre"] for t in top])
+        ctx["top_data"] = json.dumps([t["total"] for t in top])
+
+        meses, ingresos = [], []
+        for i in range(11, -1, -1):
+            f = hoy.replace(day=1) - timedelta(days=31 * i)
+            mes = f.replace(day=1)
+            sig = (mes.replace(day=28) + timedelta(days=4)).replace(day=1)
+            t = Factura.objects.filter(estado="emitida", fecha_creacion__gte=mes, fecha_creacion__lt=sig).aggregate(t=Sum("total"))["t"] or 0
+            meses.append(mes.strftime("%m/%y"))
+            ingresos.append(float(t))
+        ctx["mes_labels"] = json.dumps(meses)
+        ctx["mes_data"] = json.dumps(ingresos)
+
+        sexo = list(Paciente.objects.filter(activo=True).values("sexo").annotate(total=Count("id")))
+        ctx["sexo_labels"] = json.dumps([s["sexo"] for s in sexo])
+        ctx["sexo_data"] = json.dumps([s["total"] for s in sexo])
+
+        rangos = {"0-12": 0, "13-17": 0, "18-35": 0, "36-55": 0, "56+": 0}
+        for p in Paciente.objects.filter(activo=True):
+            e = p.edad
+            k = "0-12" if e <= 12 else "13-17" if e <= 17 else "18-35" if e <= 35 else "36-55" if e <= 55 else "56+"
+            rangos[k] += 1
+        ctx["edad_labels"] = json.dumps(list(rangos.keys()))
+        ctx["edad_data"] = json.dumps(list(rangos.values()))
+
+        trat = list(HistorialDiente.objects.values("tipo").annotate(total=Count("id")).order_by("-total"))
+        ctx["trat_labels"] = json.dumps([t["tipo"] for t in trat])
+        ctx["trat_data"] = json.dumps([t["total"] for t in trat])
+
+        estados = list(CitaDental.objects.values("estado").annotate(total=Count("id")))
+        ctx["estado_labels"] = json.dumps([e["estado"] for e in estados])
+        ctx["estado_data"] = json.dumps([e["total"] for e in estados])
         return ctx
+
 
 
 class AjusteMasivoPreciosView(SoloSuperUser, View):
@@ -81,6 +122,11 @@ class AjusteMasivoPreciosView(SoloSuperUser, View):
 
 class FacturaExportarExcelView(SoloSuperUser, TemplateView):
     template_name = "reports/exportar_excel.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.GET.get("descargar") == "1":
+            return self.post(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         if openpyxl is None:

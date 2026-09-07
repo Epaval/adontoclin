@@ -281,3 +281,30 @@ class RecetaPDFView(LoginRequiredMixin, View):
         response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response["Content-Disposition"] = f'inline; filename="receta_{receta.pk}.pdf"'
         return response
+
+
+class RecetaUpdateView(LoginRequiredMixin, TemplateView):
+    template_name = "clinical/receta_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.receta = get_object_or_404(Receta, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.setdefault("formset", RecetaMedFormSet(instance=self.receta))
+        ctx["receta"] = self.receta
+        ctx["cita"] = self.receta.cita
+        ctx["paciente"] = self.receta.cita.expediente.paciente
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        formset = RecetaMedFormSet(request.POST, instance=self.receta)
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(formset=formset))
+        self.receta.diagnostico = request.POST.get("diagnostico", "").strip()
+        self.receta.indicaciones_generales = request.POST.get("indicaciones_generales", "").strip()
+        self.receta.save()
+        formset.save()
+        messages.success(request, f"Receta #{self.receta.pk} actualizada.")
+        return redirect("patients:historial", pk=self.receta.cita.expediente.paciente.pk)

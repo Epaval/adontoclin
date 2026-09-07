@@ -167,7 +167,7 @@ body[data-theme="azul"] .text-slate-900,body[data-theme="verde"] .text-slate-900
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
             <span class="text-sm font-medium">Estadísticas</span>
           </a>
-          <a href="{% url 'exportar_excel' %}" class="sidebar-link flex items-center gap-3">
+          <a href="{% url 'exportar_excel' %}?descargar=1" class="sidebar-link flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span class="text-sm font-medium">Exportar Excel</span>
           </a>
