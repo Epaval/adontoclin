@@ -1,99 +1,77 @@
 {% extends "base.html" %}
-
-{% block title %}Panel principal · OdontoClin{% endblock %}
-
-{% block page_title %}Resumen general{% endblock %}
-
 {% block content %}
+<div class="max-w-6xl mx-auto space-y-6 pb-10">
 
-    </div>
-
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10 2v7.31"/>
-            <path d="M14 9.3V1.99"/>
-            <path d="M8.5 2h7"/>
-            <path d="M14 9.3a6.5 6.5 0 1 1-4 0"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-slate-900">{{ total_examenes }}</p>
-          <p class="text-sm text-slate-500">Servicios</p>
-        </div>
+  <!-- Métricas -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-sky-100 flex items-center justify-center text-xl">👥</div>
+        <div><p class="text-2xl font-bold text-slate-900">{{ total_pacientes }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Pacientes</p></div>
       </div>
     </div>
-
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <path d="M14 2v6h6"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-slate-900">{{ pacientes_del_dia }}</p>
-          <p class="text-sm text-slate-500">Pacientes del día</p>
-        </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl">📅</div>
+        <div><p class="text-2xl font-bold text-slate-900">{{ pacientes_del_dia }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Pacientes del día</p></div>
+      </div>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center text-xl">🦷</div>
+        <div><p class="text-2xl font-bold text-slate-900">{{ total_examenes }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Servicios</p></div>
+      </div>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-rose-100 flex items-center justify-center text-xl">📋</div>
+        <div><p class="text-2xl font-bold text-slate-900">{{ total_resultados }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Historias clínicas</p></div>
       </div>
     </div>
   </div>
 
-  <!-- Accesos rápidos -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% if perms.patients.add_paciente %}
-      <a href="{% url 'patients:create' %}" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all group">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500 group-hover:text-white transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </div>
-          <div>
-            <h3 class="font-bold text-slate-900">Nuevo paciente</h3>
-            <p class="text-sm text-slate-500">Registrar un paciente</p>
-          </div>
-        </div>
-      </a>
-    {% endif %}
-
-    {% if perms.patients.add_expediente %}
-      
-    {% endif %}
-
-    
-  </div>
-
-  <!-- Respaldo de base de datos (solo escritorio) -->
-  {% if modo_escritorio %}
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="12" cy="5" rx="9" ry="3"/>
-              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-base font-bold text-slate-900">Copia de seguridad</h2>
-            <p class="text-sm text-slate-500 mt-0.5">
-              Descarga un respaldo completo de la base de datos
-            </p>
-          </div>
-        </div>
-        <a href="{% url 'backup' %}"
-           class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Descargar respaldo
-        </a>
+  <div class="grid md:grid-cols-3 gap-4">
+    <!-- Citas -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <h3 class="font-bold text-slate-900 mb-3">🗓 Citas</h3>
+      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Abiertas / en proceso</span><span class="font-bold text-sky-600">{{ ordenes_abiertas }}</span></div>
+      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Atendidas hoy</span><span class="font-bold text-emerald-600">{{ ordenes_cerradas_hoy }}</span></div>
+    </div>
+    <!-- Ingresos -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <h3 class="font-bold text-slate-900 mb-3">💰 Ingresos (emitidas)</h3>
+      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Hoy</span><span class="font-bold text-emerald-600">${{ ingresos_hoy }}</span></div>
+      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Este mes</span><span class="font-bold text-emerald-600">${{ ingresos_mes }}</span></div>
+    </div>
+    <!-- Acciones rápidas -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <h3 class="font-bold text-slate-900 mb-3">⚡ Acciones rápidas</h3>
+      <div class="flex flex-col gap-2">
+        <a href="{% url 'patients:create' %}" class="text-sm text-sky-600 hover:underline font-semibold">+ Nuevo paciente</a>
+        <a href="{% url 'clinical:expediente_list' %}" class="text-sm text-sky-600 hover:underline font-semibold">📋 Expedientes dentales</a>
+        <a href="{% url 'billing:list' %}" class="text-sm text-sky-600 hover:underline font-semibold">$ Facturación</a>
       </div>
     </div>
+  </div>
+
+  <!-- Top servicios -->
+  {% if top_examenes %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+    <h3 class="font-bold text-slate-900 mb-4">📊 Servicios más facturados</h3>
+    <div class="space-y-3">
+      {% for ex in top_examenes %}
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span class="font-medium text-slate-700">{{ ex.servicio__nombre }}</span>
+          <span class="text-slate-500">{{ ex.total }}</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2">
+          <div class="bg-sky-500 h-2 rounded-full" style="width: {% widthratio ex.total top_examenes.0.total 100 %}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
   {% endif %}
 
 </div>
