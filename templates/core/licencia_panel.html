@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Licencia · Lab Clínico</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:40px}
+.card{max-width:680px;margin:0 auto;background:#1e293b;border-radius:14px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h1{margin:0 0 4px;font-size:1.4rem}
+.sub{color:#94a3b8;margin:0 0 18px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #334155}
+.row b{color:#7dd3fc;text-align:right}
+.ok{color:#6ee7b7 !important}.warn{color:#fcd34d !important}.bad{color:#fca5a5 !important}
+.mono{font-family:monospace;letter-spacing:1px}
+a{color:#7dd3fc}
+</style></head><body>
+<div class="card">
+<h1>🔑 Licencia del sistema</h1>
+<p class="sub">Panel de administración · Lab Clínico</p>
+<div class="row"><span>Estado</span><b class="{% if lic.estado == 'activada' %}ok{% elif lic.estado == 'prueba' %}warn{% else %}bad{% endif %}">{{ lic.estado|upper }}</b></div>
+<div class="row"><span>Tipo de licencia</span><b>{{ lic.tipo|upper }}</b></div>
+<div class="row"><span>Días restantes</span><b>{% if lic.dias > 90000 %}∞ (perpetua){% else %}{{ lic.dias }}{% endif %}</b></div>
+<div class="row"><span>Vencimiento</span><b>{% if lic.vencimiento %}{{ lic.vencimiento|date:"d/m/Y H:i" }}{% else %}—{% endif %}</b></div>
+<div class="row"><span>Huella de máquina</span><b class="mono">{{ lic.huella }}</b></div>
+<div class="row"><span>Clave activada</span><b class="mono">{% if lic.clave %}{{ lic.clave }}{% else %}— (sin clave: modo prueba){% endif %}</b></div>
+<div class="row"><span>Modo dev</span><b>{% if lic.dev %}🧪 ACTIVO — prueba de {{ lic.prueba_dias }} días{% else %}desactivado{% endif %}</b></div>
+<p style="margin-top:16px"><a href="/admin/">← Volver al admin</a> · <a href="/admin-lab/estadisticas/">Estadísticas</a></p>
+</div></body></html>

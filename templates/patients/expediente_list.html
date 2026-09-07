@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-fade-in">
+
+  <div class="flex flex-col gap-4 px-6 py-5 border-b border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Órdenes de laboratorio</h1>
+        <p class="text-sm text-slate-500 mt-0.5">{{ page_obj.paginator.count }} orden(es)</p>
+      </div>
+
+      {% if perms.patients.crear_orden_lab %}
+        <a href="{% url 'patients:orden_create' %}"
+           class="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva orden
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" name="q" value="{{ q }}"
+                 placeholder="Buscar por nombre o CI del paciente..."
+                 class="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none">
+        </div>
+      </div>
+      <input type="hidden" name="estado" value="{{ estado }}">
+      <button type="submit" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        Buscar
+      </button>
+      {% if q %}
+        <a href="?estado={{ estado }}" class="inline-flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+          Limpiar
+        </a>
+      {% endif %}
+    </form>
+
+    <!-- Tabs de estado -->
+    <div class="flex gap-2 border-b border-slate-200">
+      <a href="?q={{ q }}&estado=activas"
+         class="px-4 py-2 text-sm font-semibold border-b-2 transition-colors
+         {% if estado == 'activas' %}border-sky-500 text-sky-600{% else %}border-transparent text-slate-500 hover:text-slate-700{% endif %}">
+        Activas
+      </a>
+      <a href="?q={{ q }}&estado=cerradas"
+         class="px-4 py-2 text-sm font-semibold border-b-2 transition-colors
+         {% if estado == 'cerradas' %}border-sky-500 text-sky-600{% else %}border-transparent text-slate-500 hover:text-slate-700{% endif %}">
+        Cerradas
+      </a>
+      <a href="?q={{ q }}&estado=todas"
+         class="px-4 py-2 text-sm font-semibold border-b-2 transition-colors
+         {% if estado == 'todas' %}border-sky-500 text-sky-600{% else %}border-transparent text-slate-500 hover:text-slate-700{% endif %}">
+        Todas
+      </a>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Orden</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Paciente</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Exámenes</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Estado</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Fecha</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for exp in object_list %}
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-6 py-4 text-sm font-bold text-sky-600">#{{ exp.pk }}</td>
+            <td class="px-6 py-4">
+              <div class="text-sm font-medium text-slate-800">{{ exp.paciente.full_name }}</div>
+              <div class="text-xs text-slate-400">CI {{ exp.paciente.ci|default:"-" }}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600">{{ exp.resultados.count }}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                {% if exp.estado == 'abierto' %}bg-sky-100 text-sky-700
+                {% elif exp.estado == 'procesando' %}bg-amber-100 text-amber-700
+                {% elif exp.estado == 'cerrado' %}bg-emerald-100 text-emerald-700
+                {% else %}bg-red-100 text-red-700{% endif %}">
+                {{ exp.get_estado_display }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500">{{ exp.fecha_creacion|date:"d/m/Y H:i" }}</td>
+            <td class="px-6 py-4 text-right">
+              <a href="{% url 'patients:orden_detail' exp.pk %}"
+                 class="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:text-sky-800 hover:bg-sky-50 px-3 py-1.5 rounded-lg transition-colors">
+                Ver / Cargar
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="px-6 py-16 text-center text-sm text-slate-400">
+              No hay órdenes registradas todavía
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/60">
+      {% if page_obj.has_previous %}
+        <a href="{% querystring page=page_obj.previous_page_number %}" class="text-sm font-medium text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg">← Anterior</a>
+      {% endif %}
+      <span class="text-sm text-slate-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="{% querystring page=page_obj.next_page_number %}" class="text-sm font-medium text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg">Siguiente →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+<!-- Paginador -->
+{% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
+    <div class="text-sm text-slate-600">
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </div>
+    <div class="flex gap-2">
+      {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.previous_page_number }}"
+           class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Anterior
+        </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a href="?q={{ q }}&estado={{ estado }}&page={{ page_obj.next_page_number }}"
+           class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          Siguiente
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-fade-in">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-5 border-b border-slate-200">
+    <div>
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">Facturación</h1>
+      <p class="text-sm text-slate-500 mt-0.5">{{ page_obj.paginator.count }} factura(s)</p>
+    </div>
+  </div>
+
+  <div class="px-6 py-4 bg-slate-50/60 border-b border-slate-200">
+    <form method="get" id="form-busqueda" class="relative max-w-xl">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="input-busqueda" autofocus name="q" value="{{ q }}" autocomplete="off"
+             placeholder="Buscar por número de factura o paciente…" class="w-full pl-9 pr-9">
+      {% if q %}
+        <a href="{% url 'billing:list' %}" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Factura</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Paciente</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Total</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Estado</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Fecha</th>
+          <th class="px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 text-right"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for factura in object_list %}
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-6 py-4 text-sm font-bold text-emerald-600">{{ factura.numero }}</td>
+            <td class="px-6 py-4">
+              <div class="text-sm font-medium text-slate-800">{{ factura.expediente.paciente.full_name }}</div>
+              <div class="text-xs text-slate-400">Orden #{{ factura.expediente.pk }}</div>
+            </td>
+            <td class="px-6 py-4 text-sm font-bold text-slate-800">${{ factura.total }}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                {% if factura.estado == 'emitida' %}bg-sky-100 text-sky-700
+                {% elif factura.estado == 'pagada' %}bg-emerald-100 text-emerald-700
+                {% else %}bg-red-100 text-red-700{% endif %}">
+                {{ factura.get_estado_display }}
+                {% if factura.estado == 'anulada' and factura.motivo_anulacion %}
+                  <span class="block text-[10px] font-normal normal-case text-red-500 mt-0.5">{{ factura.get_motivo_anulacion_display }}</span>
+                {% endif %}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500">{{ factura.fecha_creacion|date:"d/m/Y H:i" }}</td>
+            <td class="px-6 py-4 text-right">
+              <a href="{% url 'billing:detail' factura.pk %}"
+                 class="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors">
+                Ver →
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="px-6 py-16 text-center text-sm text-slate-400">
+              {% if q %}Sin resultados para "{{ q }}"{% else %}Aún no hay facturas generadas{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/60">
+      {% if page_obj.has_previous %}
+        <a href="?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" class="text-sm font-medium text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg">← Anterior</a>
+      {% endif %}
+      <span class="text-sm text-slate-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" class="text-sm font-medium text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg">Siguiente →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+
+
+<script>
+  // Deja seleccionado el texto del buscador: al escribir se reemplaza solo
+  (function () {
+    var i = document.getElementById('input-busqueda');
+    if (i && i.value) { i.focus(); i.select(); }
+  })();
+</script>
+{% endblock %}

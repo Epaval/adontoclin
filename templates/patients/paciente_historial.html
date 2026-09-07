@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6 animate-fade-in">
+  <a href="{% url 'patients:list' %}" class="text-sm font-medium text-sky-600 hover:text-sky-700">
+    ← Volver a pacientes
+  </a>
+</div>
+
+<!-- Ficha del paciente + acciones de reporte -->
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mb-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg font-bold flex-shrink-0">
+        {{ paciente.nombres|first }}{{ paciente.apellidos|first }}
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">{{ paciente.full_name }}</h1>
+        <p class="text-sm text-slate-500 mt-0.5">
+          CI {{ paciente.ci|default:"-" }} · {{ paciente.edad }} años · {{ paciente.get_sexo_display }}
+          · {{ paciente.telefono|default:"sin teléfono" }}
+        </p>
+        <p class="text-sm text-slate-500">
+          <span class="font-medium text-slate-700">{{ paciente.email|default:"Sin correo registrado" }}</span>
+        </p>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- Historial de órdenes -->
+<h2 class="text-base font-bold text-slate-900 mb-4">
+  Historial de órdenes ({{ expedientes|length }})
+</h2>
+
+<div class="space-y-5">
+  {% for exp in expedientes %}
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 bg-slate-50/60 border-b border-slate-200">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-bold text-sky-600">Orden {{ exp.pk }}</span>
+          <span class="text-xs text-slate-400">{{ exp.fecha_creacion|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="{% url 'patients:reporte_pdf' paciente.pk %}?orden={{ exp.pk }}" target="_blank"
+             class="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Ver PDF
+          </a>
+          
+          <a href="{% url 'patients:orden_detail' exp.pk %}" class="text-sm font-medium text-sky-600 hover:text-sky-700">
+            Ver orden →
+          </a>
+        </div>
+      </div>
+
+      {% if exp.observaciones %}
+        <div class="px-6 py-3 bg-amber-50 border-b border-amber-200">
+          <div class="flex items-start gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p class="text-xs text-amber-800"><strong>Observaciones:</strong> {{ exp.observaciones }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Examen</th>
+              <th class="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Resultado</th>
+              <th class="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for r in exp.resultados.all %}
+              <tr>
+                <td class="px-6 py-3 text-sm font-medium text-slate-800">{{ r.examen.nombre_completo }}</td>
+                <td class="px-6 py-3 text-sm">
+                  {% if r.tiene_resultado %}
+                    <span class="font-semibold text-slate-800">{{ r.resultado_texto }}</span>
+                  {% else %}
+                    <span class="text-slate-400 italic">Pendiente</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                    {% if r.estado == 'borrador' %}bg-amber-100 text-amber-700
+                    {% elif r.estado == 'cargado' %}bg-sky-100 text-sky-700
+                    {% elif r.estado == 'validado' %}bg-violet-100 text-violet-700
+                    {% elif r.estado == 'publicado' %}bg-emerald-100 text-emerald-700
+                    {% else %}bg-red-100 text-red-700{% endif %}">
+                    {% if r.estado == 'borrador' %}Pendiente{% else %}{{ r.get_estado_display }}{% endif %}
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% empty %}
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm py-16 text-center text-sm text-slate-400">
+      Este paciente aún no tiene órdenes registradas.
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

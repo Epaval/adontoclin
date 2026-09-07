@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bienvenido · Lab Clínico</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #fff; border-radius: 20px; max-width: 520px; width: 100%;
+      padding: 40px 36px; box-shadow: 0 25px 60px rgba(0,0,0,.35);
+    }
+    .logo {
+      width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 18px;
+      background: linear-gradient(135deg, #0ea5e9, #10b981);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 30px; font-weight: 800;
+    }
+    h1 { text-align: center; font-size: 22px; color: #0f172a; margin-bottom: 4px; }
+    p.sub { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 26px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .full { grid-column: 1 / -1; }
+    label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 5px; }
+    input {
+      width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 10px;
+      font-size: 14px;
+    }
+    input:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,.2); }
+    .check { display: flex; gap: 10px; align-items: flex-start; background: #f0fdf4;
+      border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px; margin: 18px 0; }
+    .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: #10b981; }
+    .check span { font-size: 13px; color: #166534; }
+    .err { color: #b91c1c; font-size: 12px; margin-top: 4px; }
+    button {
+      width: 100%; padding: 14px; border: 0; border-radius: 12px; margin-top: 6px;
+      background: linear-gradient(135deg, #0ea5e9, #10b981);
+      color: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
+    }
+    button:hover { opacity: .92; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">+</div>
+    <h1>¡Bienvenido a Lab Clínico!</h1>
+    <p class="sub">Primer paso: crea la cuenta principal del administrador</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="grid">
+        <div>
+          <label>Nombres</label>
+          {{ form.nombres }}
+          {% if form.nombres.errors %}<div class="err">{{ form.nombres.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Apellidos</label>
+          {{ form.apellidos }}
+          {% if form.apellidos.errors %}<div class="err">{{ form.apellidos.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Usuario</label>
+          {{ form.nombre_usuario }}
+          {% if form.nombre_usuario.errors %}<div class="err">{{ form.nombre_usuario.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Correo electrónico</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="err">{{ form.email.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Contraseña</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="err">{{ form.password1.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Repetir contraseña</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="err">{{ form.password2.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <label class="check">
+        {{ form.cargar_catalogo }}
+        <span>Cargar roles (admin, jefe, bioanalista, auxiliar) y el catálogo completo de ~160 exámenes con sus valores de referencia. Podrás editarlos o agregar más después.</span>
+      </label>
+
+      <button type="submit">Crear cuenta y comenzar →</button>
+    </form>
+  </div>
+</body>
+</html>

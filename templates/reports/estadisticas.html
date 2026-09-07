@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Estadísticas · Lab Clínico{% endblock %}
+{% block page_title %}Estadísticas del laboratorio{% endblock %}
+
+{% block content %}
+<div class="space-y-6 animate-fade-in">
+
+  <div class="flex items-center gap-2">
+    <span class="text-sm text-slate-500">Período:</span>
+    <a href="?dias=30" class="px-3 py-1 rounded-lg text-sm font-semibold {% if dias == 30 %}bg-sky-500 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">30 días</a>
+    <a href="?dias=90" class="px-3 py-1 rounded-lg text-sm font-semibold {% if dias == 90 %}bg-sky-500 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">90 días</a>
+    <a href="?dias=365" class="px-3 py-1 rounded-lg text-sm font-semibold {% if dias == 365 %}bg-sky-500 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">12 meses</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <p class="text-2xl font-bold text-slate-900">{{ total_resultados }}</p>
+      <p class="text-sm text-slate-500">Exámenes realizados</p>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <p class="text-2xl font-bold text-slate-900">{{ total_facturas }}</p>
+      <p class="text-sm text-slate-500">Facturas emitidas</p>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <p class="text-2xl font-bold text-emerald-600">{{ total_ingresos }}</p>
+      <p class="text-sm text-slate-500">Ingresos del período</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Top 10 exámenes más realizados</h3>
+      <div class="h-80"><canvas id="chartTop"></canvas></div>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Exámenes por mes</h3>
+      <div class="h-80"><canvas id="chartMes"></canvas></div>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Exámenes por sexo del paciente</h3>
+      <div class="h-64"><canvas id="chartSexo"></canvas></div>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Exámenes por rango de edad</h3>
+      <div class="h-64"><canvas id="chartEdad"></canvas></div>
+    </div>
+    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Ingresos por mes</h3>
+      <div class="h-72"><canvas id="chartIng"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+        <tr>
+          <th class="px-6 py-3 text-left">Examen</th>
+          <th class="px-6 py-3 text-right">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for t in top_examenes %}
+        <tr>
+          <td class="px-6 py-2.5 text-slate-900">{{ t.examen__nombre_completo }}</td>
+          <td class="px-6 py-2.5 text-right font-bold text-sky-600">{{ t.total }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2" class="px-6 py-6 text-center text-slate-400">Sin datos en el período</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script>
+  new Chart(document.getElementById('chartTop'), {
+    type: 'bar',
+    data: { labels: {{ chart_top_labels|safe }}, datasets: [{ data: {{ chart_top_data|safe }}, backgroundColor: '#0ea5e9' }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+  new Chart(document.getElementById('chartMes'), {
+    type: 'line',
+    data: { labels: {{ chart_mes_labels|safe }}, datasets: [{ data: {{ chart_mes_data|safe }}, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.15)', fill: true, tension: .3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+  new Chart(document.getElementById('chartSexo'), {
+    type: 'doughnut',
+    data: { labels: {{ chart_sexo_labels|safe }}, datasets: [{ data: {{ chart_sexo_data|safe }}, backgroundColor: ['#f472b6', '#38bdf8', '#a78bfa'] }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+  new Chart(document.getElementById('chartEdad'), {
+    type: 'bar',
+    data: { labels: {{ chart_edad_labels|safe }}, datasets: [{ data: {{ chart_edad_data|safe }}, backgroundColor: '#8b5cf6' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+  new Chart(document.getElementById('chartIng'), {
+    type: 'bar',
+    data: { labels: {{ chart_ing_labels|safe }}, datasets: [{ data: {{ chart_ing_data|safe }}, backgroundColor: '#10b981' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+</script>
+{% endblock %}

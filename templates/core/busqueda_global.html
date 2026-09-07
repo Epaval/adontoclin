@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Resultados de búsqueda · Lab Clínico{% endblock %}
+{% block page_title %}Resultados para "{{ q }}"{% endblock %}
+
+{% block content %}
+<div class="space-y-6 animate-fade-in">
+
+  {% if q|length < 2 %}
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
+    <p class="text-sm text-amber-700">Escribe al menos 2 caracteres para buscar.</p>
+  </div>
+  {% else %}
+
+  <!-- Pacientes -->
+  {% if pacientes %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+      <h2 class="text-base font-bold text-slate-900">Pacientes ({{ pacientes|length }})</h2>
+    </div>
+    <div class="divide-y divide-slate-100">
+      {% for p in pacientes %}
+      <a href="{% url 'patients:historial' p.pk %}" class="block px-6 py-4 hover:bg-slate-50 transition-colors">
+        <p class="text-sm font-semibold text-slate-800">{{ p.full_name }}</p>
+        <p class="text-xs text-slate-500">CI: {{ p.ci_efectivo|default:"-" }} · Tel: {{ p.telefono_efectivo|default:"-" }}</p>
+        {% if p.es_menor and p.representante %}<p class="text-xs text-sky-400">Rep: {{ p.representante.full_name }} · CI {{ p.representante.ci|default:"-" }}</p>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Órdenes -->
+  {% if ordenes %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+      <h2 class="text-base font-bold text-slate-900">Órdenes ({{ ordenes|length }})</h2>
+    </div>
+    <div class="divide-y divide-slate-100">
+      {% for ord in ordenes %}
+      <a href="{% url 'patients:orden_detail' ord.pk %}" class="block px-6 py-4 hover:bg-slate-50 transition-colors">
+        <p class="text-sm font-semibold text-slate-800">Orden #{{ ord.pk }}</p>
+        <p class="text-xs text-slate-500">{{ ord.paciente.full_name }} · {{ ord.fecha_creacion|date:"d/m/Y H:i" }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Exámenes -->
+  {% if examenes %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+      <h2 class="text-base font-bold text-slate-900">Exámenes ({{ examenes|length }})</h2>
+    </div>
+    <div class="divide-y divide-slate-100">
+      {% for ex in examenes %}
+      <div class="px-6 py-4">
+        <p class="text-sm font-semibold text-slate-800">{{ ex.nombre_completo }}</p>
+        <p class="text-xs text-slate-500">{{ ex.perfil|default:"Sin perfil" }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not pacientes and not ordenes and not examenes %}
+  <div class="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-slate-300 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <p class="text-sm text-slate-500">No se encontraron resultados para "{{ q }}"</p>
+  </div>
+  {% endif %}
+
+  {% endif %}
+
+</div>
+{% endblock %}

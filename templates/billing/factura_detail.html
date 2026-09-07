@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto animate-fade-in">
+
+  <div class="mb-6 flex items-center justify-between gap-4">
+    <a href="{% url 'billing:list' %}" class="text-sm font-medium text-sky-600 hover:text-sky-700">← Volver a facturas</a>
+    <a href="{% url 'billing:factura_pdf' factura.pk %}" target="_blank"
+       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm hover:shadow-lg transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Descargar PDF
+    </a>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+    <!-- Encabezado de la factura -->
+    <div class="px-8 py-6 border-b border-slate-200 bg-slate-50/60">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-500 flex items-center justify-center text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-slate-900 tracking-tight">Lab Clínico</h1>
+              <p class="text-xs text-slate-500">Sistema Integral de Laboratorio</p>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight">{{ factura.numero }}</p>
+          {% if factura.numero_control %}
+          <p class="text-sm font-bold text-slate-700 tracking-wider mt-1">
+            <span class="text-slate-400 text-xs font-normal">N° Control:</span> {{ factura.numero_control }}
+          </p>
+          {% endif %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mt-1
+            {% if factura.estado == 'emitida' %}bg-sky-100 text-sky-700
+            {% elif factura.estado == 'pagada' %}bg-emerald-100 text-emerald-700
+            {% else %}bg-red-100 text-red-700{% endif %}">
+            {{ factura.get_estado_display }}
+          </span>
+          <p class="text-xs text-slate-400 mt-2">{{ factura.fecha_creacion|date:"d/m/Y H:i" }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if factura.estado == 'anulada' %}
+    <div class="px-8 py-4 border-b border-red-200 bg-red-50">
+      <div class="flex items-start gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+        <div>
+          <p class="text-sm font-bold text-red-700">Factura anulada</p>
+          <p class="text-sm text-red-600 mt-1">
+            Motivo: <span class="font-semibold">{{ factura.get_motivo_anulacion_display|default:"No especificado" }}</span>
+          </p>
+          {% if factura.motivo_anulacion == 'otros' and factura.motivo_anulacion_otro %}
+            <p class="text-sm text-red-600 mt-1 italic">"{{ factura.motivo_anulacion_otro }}"</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Datos del paciente -->
+    <div class="px-8 py-5 border-b border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Paciente</p>
+        <p class="text-sm font-semibold text-slate-800">{{ factura.expediente.paciente.full_name }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CI</p>
+        <p class="text-sm font-medium text-slate-700">{{ factura.expediente.paciente.ci|default:"-" }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Orden</p>
+        <a href="{% url 'patients:orden_detail' factura.expediente.pk %}" class="text-sm font-medium text-sky-600 hover:text-sky-700">
+          #{{ factura.expediente.pk }}
+        </a>
+      </div>
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Método de pago</p>
+        <p class="text-sm font-medium text-slate-700">{{ factura.get_metodo_pago_display|default:"—" }}</p>
+      </div>
+    </div>
+
+    <!-- Detalle -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-8 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Examen</th>
+            <th class="px-8 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 text-center">Cant.</th>
+            <th class="px-8 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 text-right">Precio</th>
+            <th class="px-8 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for d in detalles %}
+            <tr>
+              <td class="px-8 py-4">
+                <div class="text-sm font-medium text-slate-800">{{ d.examen.nombre_completo }}</div>
+                <div class="text-xs text-slate-400">{{ d.examen.perfil }}</div>
+              </td>
+              <td class="px-8 py-4 text-sm text-slate-600 text-center">{{ d.cantidad }}</td>
+              <td class="px-8 py-4 text-sm text-slate-600 text-right">${{ d.precio_unitario }}</td>
+              <td class="px-8 py-4 text-sm font-semibold text-slate-800 text-right">${{ d.subtotal }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totales -->
+    <div class="px-8 py-6 border-t border-slate-200 flex justify-end">
+      <div class="w-full sm:w-72 space-y-2">
+        <div class="flex justify-between text-sm text-slate-600">
+          <span>Subtotal</span>
+          <span class="font-medium">${{ factura.subtotal }}</span>
+        </div>
+        <div class="flex justify-between text-sm text-slate-600">
+          <span>Descuento</span>
+          <span class="font-medium">-${{ factura.descuento }}</span>
+        </div>
+        <div class="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-200">
+          <span>Total</span>
+          <span class="text-emerald-600">${{ factura.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    {% if factura.estado != 'anulada' %}
+      <div class="px-8 py-5 border-t border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {% if factura.estado != 'pagada' and perms.billing.change_factura %}
+          <form method="post" action="{% url 'billing:pagar' factura.pk %}" class="flex items-center gap-3">
+            {% csrf_token %}
+            <select name="metodo_pago" class="text-sm border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+              <option value="">Método de pago…</option>
+              {% for value, label in metodos_pago %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-all">
+              Marcar como pagada
+            </button>
+          </form>
+          <button type="button" onclick="abrirModalAnular()"
+                  class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2.5 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Anular factura
+          </button>
+          
+        {% else %}
+          <p class="text-sm text-slate-500">
+            {% if factura.estado == 'pagada' %}
+              ✅ Factura pagada mediante {{ factura.get_metodo_pago_display|default:"método no especificado" }}.
+            {% endif %}
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+<!-- Modal de confirmación: anular factura -->
+<div id="modal-anular-backdrop"
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] hidden"></div>
+
+<div id="modal-anular"
+     class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl max-w-md w-[90%] z-[9999] hidden animate-modal-pop overflow-hidden">
+
+  <div class="p-8 text-center">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+
+    <h2 class="text-xl font-bold text-slate-900 mb-2">¿Anular la factura {{ factura.numero }}?</h2>
+    <p class="text-sm text-slate-600 leading-relaxed">
+      Esta acción no se puede deshacer. La factura quedará marcada como
+      <span class="font-semibold text-red-600">anulada</span> y la orden podrá ser facturada nuevamente.
+    </p>
+
+    <!-- Resumen de lo que se va a anular -->
+    <div class="mt-5 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-left">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Paciente</p>
+          <p class="text-sm font-semibold text-slate-800">{{ factura.expediente.paciente.full_name }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total</p>
+          <p class="text-sm font-bold text-slate-900">${{ factura.total }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-8 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+    <button type="button" onclick="cerrarModalAnular()"
+            class="text-sm font-semibold text-slate-600 hover:bg-slate-200 px-4 py-2.5 rounded-lg transition-colors">
+      Cancelar
+    </button>
+
+    <form method="post" action="{% url 'billing:anular' factura.pk %}">
+      {% csrf_token %}
+      
+      <div class="mt-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Motivo de anulación *</label>
+        <select name="motivo_anulacion" id="motivo-anulacion-select" required
+                class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                onchange="toggleMotivoOtro()">
+          <option value="">Seleccionar motivo...</option>
+          <option value="devolucion">Devolución al cliente</option>
+          <option value="falta_resultado">Falta de resultado</option>
+          <option value="otros">Otros</option>
+        </select>
+      </div>
+
+      <div class="mt-4 hidden" id="motivo-otro-container">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Especificar motivo *</label>
+        <textarea name="motivo_anulacion_otro" id="motivo-anulacion-otro"
+                  rows="3"
+                  class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="Describe el motivo de la anulación..."></textarea>
+      </div>
+
+      <button type="submit"
+              class="mt-6 inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm hover:shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Sí, anular factura
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleMotivoOtro() {
+    const select = document.getElementById('motivo-anulacion-select');
+    const container = document.getElementById('motivo-otro-container');
+    const textarea = document.getElementById('motivo-anulacion-otro');
+    
+    if (select.value === 'otros') {
+      container.classList.remove('hidden');
+      textarea.required = true;
+    } else {
+      container.classList.add('hidden');
+      textarea.required = false;
+      textarea.value = '';
+    }
+  }
+
+  function abrirModalAnular() {
+    document.getElementById('modal-anular-backdrop').classList.remove('hidden');
+    document.getElementById('modal-anular').classList.remove('hidden');
+  }
+
+  function cerrarModalAnular() {
+    document.getElementById('modal-anular-backdrop').classList.add('hidden');
+    document.getElementById('modal-anular').classList.add('hidden');
+  }
+
+  // Cerrar con clic fuera
+  document.getElementById('modal-anular-backdrop').addEventListener('click', cerrarModalAnular);
+
+  // Cerrar con ESC
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrarModalAnular();
+  });
+</script>
+{% endblock %}

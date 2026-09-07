@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Ajuste masivo de precios · Lab Clínico{% endblock %}
+{% block page_title %}Ajuste masivo de precios{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl space-y-6 animate-fade-in">
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+    <p class="text-sm text-slate-500 mb-4">
+      Se ajustarán los precios de <span class="font-bold text-slate-900">{{ total_examenes }}</span> exámenes activos.
+      El historial de precios anteriores se conserva.
+    </p>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Porcentaje de ajuste</label>
+        <input type="number" step="0.01" name="porcentaje" id="pct" value="{{ porcentaje }}" required
+               class="w-40 border border-slate-300 rounded-lg px-3 py-2">
+        <span class="text-sm text-slate-500 ml-2">%</span>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" onclick="document.getElementById('pct').value='10'" class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-semibold">+10%</button>
+        <button type="button" onclick="document.getElementById('pct').value='20'" class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-semibold">+20%</button>
+        <button type="button" onclick="document.getElementById('pct').value='-5'" class="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-sm font-semibold">-5%</button>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit" name="preview" value="1"
+                class="bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+          Vista previa
+        </button>
+        {% if preview %}
+        <button type="submit" name="aplicar" value="1"
+                class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+          Aplicar ajuste a {{ preview|length }} exámenes
+        </button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  {% if preview %}
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+        <tr>
+          <th class="px-6 py-3 text-left">Examen</th>
+          <th class="px-6 py-3 text-right">Precio actual</th>
+          <th class="px-6 py-3 text-right">Nuevo precio</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for fila in preview %}
+        <tr>
+          <td class="px-6 py-2.5 text-slate-900">{{ fila.examen.nombre_completo }}</td>
+          <td class="px-6 py-2.5 text-right text-slate-500">{{ fila.actual }}</td>
+          <td class="px-6 py-2.5 text-right font-bold text-emerald-600">{{ fila.nuevo }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

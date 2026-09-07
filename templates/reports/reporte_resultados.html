@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: letter; margin: 1.8cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #1e293b; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #cbd5e1; padding: 3px 6px; text-align: left; vertical-align: top; }
+  th { background-color: #f1f5f9; font-size: 9px; text-transform: uppercase; }
+  .sin-borde, .sin-borde td { border: none; padding: 0; }
+  .lab-nombre { font-size: 20px; font-weight: bold; color: #0369a1; }
+  .lab-rif { font-size: 11px; font-weight: bold; color: #1e293b; margin-top: 2px; }
+  .lab-datos { font-size: 9px; color: #475569; margin-top: 1px; }
+  .lema { font-size: 9px; color: #64748b; font-style: italic; margin-top: 3px; }
+  .sub { color: #64748b; font-size: 9px; }
+  .datos td { background-color: #f8fafc; }
+  .orden-titulo { font-size: 12px; font-weight: bold; color: #0f172a; margin-top: 10px; }
+  .perfil-titulo { font-size: 11px; font-weight: bold; color: #0369a1; margin: 8px 0 3px 0; text-transform: uppercase; }
+  .pendiente { color: #b45309; font-style: italic; }
+  .firma { margin-top: 24px; page-break-inside: avoid; }
+  .firma-linea { border-top: 1px solid #1e293b; width: 260px; margin: 0 auto; padding-top: 4px; }
+  .pie { margin-top: 24px; font-size: 8px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+  <!-- Encabezado grande del laboratorio -->
+  <table class="sin-borde">
+    <tr>
+      <td style="width:25%; vertical-align:top;">
+        {% if logo_path %}<img src="{{ logo_path }}" style="width:100px;" />{% endif %}
+      </td>
+      <td style="width:50%; text-align:center; vertical-align:top;">
+        <div class="lab-nombre">{{ lab.nombre }}</div>
+        {% if lab.rif %}<div class="lab-rif">RIF: {{ lab.rif }}</div>{% endif %}
+        {% if lab.direccion %}
+          <div class="lab-datos">{{ lab.direccion }}{% if lab.ciudad %} · {{ lab.ciudad }}{% endif %}</div>
+        {% endif %}
+        {% if lab.telefono or lab.email %}
+          <div class="lab-datos">
+            {% if lab.telefono %}Tlf: {{ lab.telefono }}{% endif %}
+            {% if lab.telefono and lab.email %} · {% endif %}
+            {% if lab.email %}{{ lab.email }}{% endif %}
+          </div>
+        {% endif %}
+        {% if lab.lema %}<div class="lema">"{{ lab.lema }}"</div>{% endif %}
+      </td>
+      <td style="width:25%; text-align:right; vertical-align:top;">
+        <div class="sub">
+          Reporte de resultados<br>
+          Fecha de emisión:<br>
+          <strong>{{ fecha_generacion|date:"d/m/Y H:i" }}</strong>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <!-- Datos del paciente -->
+  <table>
+    <tr class="datos">
+      <td><strong>Paciente:</strong> {{ paciente.full_name }}</td>
+      <td><strong>CI:</strong> {{ paciente.ci_efectivo|default:"-" }}{% if paciente.es_menor and paciente.representante %}<br>Representante: {{ paciente.representante.full_name }} · CI: {{ paciente.representante.ci|default:"-" }} · Tel: {{ paciente.representante.telefono|default:"-" }}{% endif %}</td>
+    </tr>
+    <tr class="datos">
+      <td><strong>Edad:</strong> {{ paciente.edad }} años · {{ paciente.get_sexo_display }}</td>
+      <td><strong>Teléfono:</strong> {{ paciente.telefono|default:"-" }}</td>
+    </tr>
+  </table>
+
+  <!-- Resultados agrupados por perfil (sin columna Estado) -->
+  {% for dato in expedientes_datos %}
+    <div class="orden-titulo">Orden #{{ dato.expediente.pk }} — {{ dato.expediente.fecha_creacion|date:"d/m/Y" }}</div>
+
+    {% for grupo in dato.grupos %}
+      {% if grupo.cabecera_orina %}<div class="perfil-titulo" style="color:#0f172a;font-size:12px;border-bottom:2px solid #0369a1;padding-bottom:3px">EXAMEN DE ORINA (UROANÁLISIS)</div>{% endif %}
+      <div class="perfil-titulo">{% if grupo.es_orina %}{{ grupo.perfil|cut:"Orina · " }}{% else %}Perfil: {{ grupo.perfil }}{% endif %}</div>
+      <table>
+        <tr>
+          <th style="width:34%;">Examen</th>
+          <th style="width:26%;">Resultado</th>
+          <th style="width:40%;">Valores de referencia</th>
+        </tr>
+        {% for r in grupo.resultados %}
+          <tr>
+            <td>{{ r.examen.nombre_completo }}</td>
+            <td>
+              {% if r.tiene_resultado %}
+                <strong>{{ r.resultado_texto }}</strong>
+              {% else %}
+                <span class="pendiente">Pendiente</span>
+              {% endif %}
+            </td>
+            <td>{{ r.examen.valores_ref }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endfor %}
+  {% empty %}
+    <p style="margin-top:16px;">El paciente no tiene órdenes registradas.</p>
+  {% endfor %}
+
+  <!-- Firma y sello del bioanalista -->
+  {% if nombre_firma or firma_path or sello_path %}
+    <table class="sin-borde firma">
+      <tr>
+        <td style="text-align:center;">
+          <div class="firma-linea">
+            <div style="font-size:10px; font-weight:bold;">{{ nombre_firma }}</div>
+            <div class="sub">Bioanalista{% if registro_firma %} · Reg. N° {{ registro_firma }}{% endif %}</div>
+            <div class="sub">Firma y sello</div>
+          </div>
+          {% if firma_path or sello_path %}
+          <div style="margin-top:6px;">
+            {% if sello_path %}<img src="{{ sello_path }}" style="height:80px; opacity:0.9;" />&nbsp;&nbsp;&nbsp;{% endif %}
+            {% if firma_path %}<img src="{{ firma_path }}" style="height:60px;" />{% endif %}
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align:center; padding-top:12px;">
+          <span style="font-size:8px; color:#94a3b8;">Este documento es confidencial y fue generado electrónicamente por {{ lab.nombre }}. Los resultados deben ser interpretados por un profesional de la salud.</span>
+        </td>
+      </tr>
+    </table>
+  {% else %}
+    <p class="pie">
+      Este documento es confidencial y fue generado electrónicamente por {{ lab.nombre }}.
+      Los resultados deben ser interpretados por un profesional de la salud.
+    </p>
+  {% endif %}
+</body>
+</html>

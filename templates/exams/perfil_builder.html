@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+
+  <!-- Constructor -->
+  <div class="lg:col-span-2">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-5 border-b border-slate-200">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">
+          {% if perfil_editar %}Editar perfil: {{ perfil_editar.nombre }}{% else %}Crear perfil personalizado{% endif %}
+        </h1>
+        <p class="text-sm text-slate-500 mt-0.5">Escribe el nombre y marca los exámenes que lo componen</p>
+      </div>
+
+      <form method="post" class="p-6">
+        {% csrf_token %}
+        {% if perfil_editar %}<input type="hidden" name="perfil_id" value="{{ perfil_editar.pk }}">{% endif %}
+
+        <div class="mb-5">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre del perfil</label>
+          <input type="text" name="nombre" value="{{ nombre_inicial }}" required
+                 placeholder="Ej: Perfil20, Perfil15, Control Diabetes..."
+                 class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none">
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm text-slate-500">
+            <span id="contador-seleccion" class="font-bold text-sky-600">0</span> examen(es) seleccionado(s)
+          </p>
+          <button type="button" onclick="limpiarSeleccion()" class="text-xs font-semibold text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg">Limpiar todo</button>
+        </div>
+
+        {% for nombre_grupo, items in grupos %}
+        <div class="border border-slate-200 rounded-xl mb-3 overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 bg-slate-50 cursor-pointer" onclick="toggleGrupo(this)">
+            <span class="text-sm font-semibold text-slate-700">
+              {{ nombre_grupo }} <span class="text-slate-400">({{ items|length }})</span>
+            </span>
+            <span class="flex items-center gap-2">
+              <button type="button" onclick="event.stopPropagation(); marcarGrupo(this, true)" class="text-xs font-semibold text-sky-600 hover:bg-sky-50 px-2 py-1 rounded">Todos</button>
+              <button type="button" onclick="event.stopPropagation(); marcarGrupo(this, false)" class="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2 py-1 rounded">Ninguno</button>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 chevron transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+          <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 grupo-body hidden">
+            {% for item in items %}
+            <label class="flex items-center gap-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg px-2 py-1 cursor-pointer">
+              <input type="checkbox" name="examenes" value="{{ item.ex.pk }}" class="chk-examen" {% if item.checked %}checked{% endif %}>
+              {{ item.ex.nombre_completo }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-all">
+            {% if perfil_editar %}Guardar cambios{% else %}Crear perfil{% endif %}
+          </button>
+          {% if perfil_editar %}
+          <a href="{% url 'exams:perfiles' %}" class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">Cancelar</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Perfiles existentes -->
+  <div>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-5 border-b border-slate-200">
+        <h2 class="text-base font-bold text-slate-900">Perfiles existentes</h2>
+      </div>
+      <div class="divide-y divide-slate-100">
+        {% for p in perfiles_existentes %}
+        <div class="px-6 py-4 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">{{ p.nombre }}</p>
+            <p class="text-xs text-slate-400">{{ p.examenes.count }} examen(es)</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="{% url 'exams:perfiles' %}?editar={{ p.pk }}" class="text-sm font-semibold text-sky-600 hover:bg-sky-50 px-2 py-1 rounded-lg">Editar</a>
+            <form method="post" action="{% url 'exams:perfil_delete' p.pk %}" onsubmit="return confirm('¿Eliminar el perfil {{ p.nombre|escapejs }}?');">
+              {% csrf_token %}
+              <button type="submit" class="text-sm font-semibold text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg">Eliminar</button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <p class="px-6 py-10 text-center text-sm text-slate-400">Aún no hay perfiles personalizados</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function actualizarContador() {
+    document.getElementById('contador-seleccion').textContent =
+      document.querySelectorAll('.chk-examen:checked').length;
+  }
+  function toggleGrupo(header) {
+    header.nextElementSibling.classList.toggle('hidden');
+    header.querySelector('.chevron').classList.toggle('rotate-180');
+  }
+  function marcarGrupo(btn, estado) {
+    const body = btn.closest('.border').querySelector('.grupo-body');
+    body.classList.remove('hidden');
+    body.querySelectorAll('.chk-examen').forEach(c => c.checked = estado);
+    actualizarContador();
+  }
+  function limpiarSeleccion() {
+    document.querySelectorAll('.chk-examen').forEach(c => c.checked = false);
+    actualizarContador();
+  }
+  document.addEventListener('change', e => { if (e.target.classList.contains('chk-examen')) actualizarContador(); });
+  actualizarContador();
+</script>
+{% endblock %}

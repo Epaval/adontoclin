@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto animate-fade-in">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+    <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/60">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">{{ title }}</h1>
+          <p class="text-sm text-slate-500 mt-0.5">
+            Paciente: {{ orden.paciente.full_name }} · {{ resultados.count }} examen(es)
+          </p>
+        </div>
+        <a href="{% url 'patients:orden_detail' orden.pk %}"
+           class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+          ← Volver a la orden
+        </a>
+      </div>
+    </div>
+
+    <form method="post" class="p-6">
+      {% csrf_token %}
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b-2 border-slate-200">
+              <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Examen</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Tipo</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Valor / Resultado</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Unidad</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Observaciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for r in resultados %}
+            <tr class="transition-colors {% if r.estado == 'borrador' %}hover:bg-slate-50/50{% endif %}" {% if r.estado != 'borrador' %}style="background-color:#ffedd5"{% endif %}>
+              <td class="py-4 px-4">
+                <div class="font-medium text-slate-900">{{ r.examen.nombre_completo }}</div>
+                {% if r.examen.valores_ref %}
+                  <div class="text-xs text-slate-500 mt-1">{{ r.examen.valores_ref|truncatechars:40 }}</div>
+                {% endif %}
+                {% if r.estado != 'borrador' %}
+                <div class="mt-1.5 flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold" style="background-color:#f97316;color:#ffffff">
+                    ✓ {{ r.get_estado_display }}
+                  </span>
+                  <a href="{% url 'results:update' r.pk %}" class="text-[10px] font-semibold text-sky-600 hover:underline">Editar individual</a>
+                </div>
+                {% endif %}
+              </td>
+              <td class="py-4 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                  {% if r.tipo_resultado == 'numerico' %}bg-sky-100 text-sky-800
+                  {% elif r.tipo_resultado == 'cualitativo' %}bg-purple-100 text-purple-800
+                  {% else %}bg-slate-100 text-slate-800{% endif %}">
+                  {{ r.get_tipo_resultado_display }}
+                </span>
+              </td>
+              <td class="py-4 px-4">
+                {% if r.estado != 'borrador' %}
+                  <div class="inline-block rounded-lg px-3 py-2 text-sm font-bold" style="background-color:#fff7ed;color:#9a3412;border:1px solid #fdba74">
+                    {{ r.resultado_texto }}
+                  </div>
+                {% elif r.tipo_resultado == 'numerico' %}
+                  <input type="number" step="0.01" name="r{{ r.pk }}_valor"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                         placeholder="0.00">
+                {% elif r.tipo_resultado == 'cualitativo' %}
+                  <select name="r{{ r.pk }}_valor"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                    <option value="">---------</option>
+                    <optgroup label="Resultado">
+                    <option value="Positivo">Positivo</option>
+                    <option value="Negativo">Negativo</option>
+                    <option value="Reactivo">Reactivo</option>
+                    <option value="No reactivo">No reactivo</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Anormal">Anormal</option>
+                    <option value="Trazas">Trazas</option>
+                    </optgroup>
+                    <optgroup label="Presencia / cantidad">
+                    <option value="Ausente">Ausente</option>
+                    <option value="Presente">Presente</option>
+                    <option value="Escasos">Escasos</option>
+                    <option value="Abundantes">Abundantes</option>
+                    </optgroup>
+                  </select>
+                {% else %}
+                  <input type="text" name="r{{ r.pk }}_valor"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                         placeholder="Texto libre">
+                {% endif %}
+              </td>
+              <td class="py-4 px-4">
+                {% if r.estado != 'borrador' %}
+                  <span class="text-sm font-semibold" style="color:#9a3412">{{ r.unidad|default:"—" }}</span>
+                {% elif r.tipo_resultado == 'numerico' %}
+                  <input type="text" name="r{{ r.pk }}_unidad"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                         placeholder="mg/dL">
+                {% else %}
+                  <span class="text-slate-400 text-sm">—</span>
+                {% endif %}
+              </td>
+              <td class="py-4 px-4">
+                {% if r.estado != 'borrador' %}
+                  <span class="text-xs" style="color:#9a3412">{{ r.observaciones|default:"—" }}</span>
+                {% else %}
+                  <input type="text" name="r{{ r.pk }}_obs"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                         placeholder="Notas">
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="py-12 text-center text-slate-500">
+                No hay exámenes en esta orden
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center gap-3 mt-8 pt-6 border-t border-slate-200">
+        <button type="submit" name="modo" value="parcial"
+                class="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Guardar resultados
+        </button>
+        <p class="text-xs text-slate-400">Se guardan solo los exámenes con valor. Los ya cargados se editan de forma individual.</p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

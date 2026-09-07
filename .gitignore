@@ -1,0 +1,14 @@
+.env
+.venv/
+.venvwin/
+node_modules/
+data/
+staticfiles/
+__pycache__/
+*.pyc
+dist/
+build/
+instalador/
+*.log
+notas.md
+config.mdmedia/

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Tasa del día · Lab Clínico</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:40px}
+.card{max-width:480px;margin:0 auto;background:#1e293b;border-radius:14px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h1{margin:0 0 4px;font-size:1.3rem}
+.sub{color:#94a3b8;margin:0 0 18px;font-size:.9rem}
+label{display:block;font-size:.85rem;margin-bottom:6px;color:#cbd5e1}
+input{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-size:1.1rem;box-sizing:border-box}
+button{margin-top:14px;width:100%;padding:12px;border:none;border-radius:8px;background:#0ea5e9;color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
+.msg{background:#7f1d1d;padding:8px;border-radius:8px;margin-bottom:10px;font-size:.85rem}
+.prev{font-size:.85rem;color:#94a3b8;margin-top:12px}
+</style></head><body>
+<div class="card">
+<h1>💱 Tasa de cambio del día</h1>
+<p class="sub">Para facturar en Bs. las facturas se calculan con la tasa vigente al emitirse.</p>
+{% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+<form method="post">
+  {% csrf_token %}
+  <label for="valor">Tasa de hoy (Bs por $):</label>
+  <input type="text" id="valor" name="valor" value="{{ tasa.valor|default:'' }}" placeholder="Ej: 102,50" required autofocus>
+  <button type="submit">Guardar tasa</button>
+</form>
+<p class="prev">{% if tasa %}Última tasa: {{ tasa.valor }} Bs/$ ({{ tasa.fecha }}){% else %}Aún no hay tasa registrada.{% endif %}</p>
+</div></body></html>
