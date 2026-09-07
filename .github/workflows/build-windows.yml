@@ -27,7 +27,7 @@ jobs:
           python manage.py collectstatic --noinput
 
       - name: Compilar exe
-        run: pyinstaller labclin.spec --noconfirm
+        run: pyinstaller odontoclin.spec --noconfirm
 
       - name: Compilar instalador
         run: |
@@ -38,5 +38,5 @@ jobs:
       - name: Subir instalador
         uses: actions/upload-artifact@v4
         with:
-          name: LabClinico-Setup
+          name: OdontoClin-Setup
           path: instalador/*.exe
