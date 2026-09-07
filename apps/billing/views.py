@@ -20,7 +20,7 @@ class FacturaListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        qs = Factura.objects.select_related("expediente__paciente", "creado_por")
+        qs = Factura.objects.select_related("orden__expediente__paciente", "creado_por")
         q = self.request.GET.get("q", "").strip()
         if q:
             for term in q.split():

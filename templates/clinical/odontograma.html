@@ -1,62 +1,120 @@
-{# Odontograma FDI interactivo: hover muestra historial, colores por tratamiento #}
+{% extends "base.html" %}
+{% load odonto_tags %}
+{% block content %}
 <style>
-.odonto-wrap{background:#f8fafc;padding:16px;border-radius:12px;border:1px solid #e2e8f0}
-.odonto-arcada{display:flex;justify-content:center;gap:6px;margin:8px 0}
-.diente{width:28px;height:36px;position:relative;cursor:pointer;transition:transform .15s}
-.diente:hover{transform:scale(1.2);z-index:10}
-.diente svg{width:100%;height:100%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15))}
-.diente-num{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font-size:10px;color:#64748b;font-weight:600}
-.odonto-separador{height:1px;background:#cbd5e1;margin:12px 0}
-.odonto-tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:8px 10px;border-radius:6px;font-size:11px;white-space:nowrap;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.odonto-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1e293b}
+.odonto-card{background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.odonto-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.odonto-arcada{display:flex;justify-content:center;gap:8px;padding:10px 0}
+.diente{width:34px;height:46px;position:relative;cursor:pointer;transition:transform .15s ease}
+.diente:hover{transform:scale(1.18);z-index:20}
+.diente svg{width:100%;height:100%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.diente-num{position:absolute;left:0;right:0;text-align:center;font-size:10px;color:#64748b;font-weight:700;font-family:monospace}
+.num-sup{bottom:-16px}.num-inf{top:-16px}
+.odonto-sep{height:2px;background:linear-gradient(90deg,transparent,#334155,transparent);margin:22px 0}
+.odonto-tooltip{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #334155;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:11px;width:200px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,.5);text-align:left}
 .diente:hover .odonto-tooltip{display:block}
-.leyenda{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:12px}
-.leyenda-item{display:flex;align-items:center;gap:5px}
-.leyenda-color{width:16px;height:16px;border-radius:3px;border:1px solid #cbd5e1}
+.tooltip-line{display:flex;align-items:center;gap:6px;margin:3px 0}
+.tooltip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid #1e293b}
+.leyenda-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8}
+.leyenda-color{width:14px;height:14px;border-radius:4px;border:1px solid #334155}
+.modal-odonto{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal-odonto.abierto{display:flex}
+.modal-box{background:#1e293b;border:1px solid #334155;border-radius:14px;max-width:440px;width:100%;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
 </style>
 
-{% load odonto_tags %}
-<div class="odonto-wrap">
-  <h3 class="text-sm font-bold text-slate-900 mb-2">Odontograma FDI</h3>
-  {# ====== ARCADA SUPERIOR (dientes 1x y 2x, de 18 a 28) ====== #}
-  <div class="odonto-arcada">
-    {% for num in diente_nums_superior %}
-    <div class="diente" data-fdi="{{ num }}">
-      <svg viewBox="0 0 24 32"><rect x="2" y="2" width="20" height="28" rx="4" fill="{{ colores_paciente|get_item:num }}" stroke="#334155" stroke-width="1"/></svg>
-      <span class="diente-num">{{ num }}</span>
-      {% if historial_paciente|get_item:num %}
-        <div class="odonto-tooltip">
-          <strong>{{ num }}</strong> - {{ historial_paciente|get_item:num.tipo_display }}<br>
-          <small>{{ historial_paciente|get_item:num.fecha }}</small>
-          {% if historial_paciente|get_item:num.notas %}<br><em>{{ historial_paciente|get_item:num.notas|truncatechars:30 }}</em>{% endif %}
-        </div>
-      {% endif %}
+<div class="max-w-6xl mx-auto">
+  <div class="odonto-card">
+    <div class="odonto-header">
+      <div>
+        <h1 class="text-xl font-bold text-white">🦷 Odontograma FDI</h1>
+        <p class="text-sm text-slate-400 mt-0.5">{{ paciente.full_name }} · {{ paciente.edad }} años · CI: {{ paciente.ci_efectivo|default:"-" }}</p>
+      </div>
+      <a href="{% url 'patients:historial' paciente.pk %}" class="text-sm text-sky-400 hover:text-sky-300 font-semibold">← Ver historial completo</a>
     </div>
-    {% endfor %}
-  </div>
-  <div class="odonto-separador"></div>
-  {# ====== ARCADA INFERIOR (38-31 y 41-48) ====== #}
-  <div class="odonto-arcada">
-    {% for num in diente_nums_inferior %}
-    <div class="diente" data-fdi="{{ num }}">
-      <svg viewBox="0 0 24 32"><rect x="2" y="2" width="20" height="28" rx="4" fill="{{ colores_paciente|get_item:num }}" stroke="#334155" stroke-width="1"/></svg>
-      <span class="diente-num" style="top:-14px">{{ num }}</span>
-      {% if historial_paciente|get_item:num %}
-        <div class="odonto-tooltip" style="top:calc(100% + 8px);bottom:auto">
-          <strong>{{ num }}</strong> - {{ historial_paciente|get_item:num.tipo_display }}<br>
-          <small>{{ historial_paciente|get_item:num.fecha }}</small>
-        </div>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
 
-  <div class="leyenda">
-    {% for tipo, color in colores_leyenda %}
-    <div class="leyenda-item">
-      <span class="leyenda-color" style="background:{{ color }}"></span>
-      <span>{{ tipo }}</span>
+    <p class="text-xs text-slate-500 mb-2 text-center">Pasa el mouse sobre un diente para ver su historial · Haz clic para registrar un tratamiento</p>
+
+    <div class="odonto-arcada">
+      {% for num in diente_nums_superior %}
+      <div class="diente" data-fdi="{{ num }}" onclick="abrirModal('{{ num }}')">
+        <svg viewBox="0 0 34 46"><path d="M7 4 Q17 0 27 4 Q31 8 30 18 Q29 30 25 40 Q21 45 17 45 Q13 45 9 40 Q5 30 4 18 Q3 8 7 4 Z" fill="{{ colores_paciente|get_item:num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
+        <span class="diente-num num-sup">{{ num }}</span>
+        {% if historial_paciente|get_item:num %}
+        <div class="odonto-tooltip">
+          <strong class="text-sky-400">Diente {{ num }}</strong>
+          {% for h in historial_paciente|get_item:num %}
+          <div class="tooltip-line"><span class="tooltip-dot" style="background:{{ h.color }}"></span>{{ h.tipo_display }} · {{ h.fecha }}</div>
+          {% if h.notas %}<div class="text-slate-400 ml-3">{{ h.notas|truncatechars:40 }}</div>{% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+
+    <div class="odonto-sep"></div>
+
+    <div class="odonto-arcada">
+      {% for num in diente_nums_inferior %}
+      <div class="diente" data-fdi="{{ num }}" onclick="abrirModal('{{ num }}')">
+        <svg viewBox="0 0 34 46"><path d="M7 42 Q17 46 27 42 Q31 38 30 28 Q29 16 25 6 Q21 1 17 1 Q13 1 9 6 Q5 16 4 28 Q3 38 7 42 Z" fill="{{ colores_paciente|get_item:num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
+        <span class="diente-num num-inf">{{ num }}</span>
+        {% if historial_paciente|get_item:num %}
+        <div class="odonto-tooltip" style="top:calc(100% + 10px);bottom:auto">
+          <strong class="text-sky-400">Diente {{ num }}</strong>
+          {% for h in historial_paciente|get_item:num %}
+          <div class="tooltip-line"><span class="tooltip-dot" style="background:{{ h.color }}"></span>{{ h.tipo_display }} · {{ h.fecha }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="leyenda">
+      {% for tipo, color in colores_leyenda %}
+      <div class="leyenda-item"><span class="leyenda-color" style="background:{{ color }}"></span>{{ tipo }}</div>
+      {% endfor %}
+    </div>
   </div>
 </div>
+
+<!-- Modal registrar tratamiento -->
+<div class="modal-odonto" id="modal-odonto">
+  <div class="modal-box">
+    <h2 class="text-lg font-bold text-white mb-1">Registrar tratamiento</h2>
+    <p class="text-sm text-slate-400 mb-4">Diente <span id="modal-diente-num" class="font-mono text-sky-400 font-bold"></span></p>
+    <form method="post" onsubmit="var b=this.querySelector('button[type=submit]'); b.disabled=true; b.textContent='Guardando...'; setTimeout(function(){b.disabled=false; b.textContent='Guardar tratamiento';}, 3000); return true;">
+      {% csrf_token %}
+      <input type="hidden" name="diente" id="modal-diente-input">
+      <label class="block text-sm font-semibold text-slate-300 mb-1">Tipo de tratamiento</label>
+      <select name="tipo" required class="w-full px-3 py-2 mb-3 rounded-lg bg-slate-900 border border-slate-600 text-slate-100">
+        {% for valor, label in tipos_tratamiento %}
+        <option value="{{ valor }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm font-semibold text-slate-300 mb-1">Notas (opcional)</label>
+      <textarea name="notas" rows="3" class="w-full px-3 py-2 mb-4 rounded-lg bg-slate-900 border border-slate-600 text-slate-100" placeholder="Observaciones del tratamiento..."></textarea>
+      <div class="flex gap-2 justify-end">
+        <button type="button" onclick="cerrarModal()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-semibold">Cancelar</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold">Guardar tratamiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirModal(num) {
+  document.getElementById('modal-diente-num').textContent = num;
+  document.getElementById('modal-diente-input').value = num;
+  document.getElementById('modal-odonto').classList.add('abierto');
+}
+function cerrarModal() {
+  document.getElementById('modal-odonto').classList.remove('abierto');
+}
+document.getElementById('modal-odonto').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+</script>
+{% endblock %}

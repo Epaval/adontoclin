@@ -95,6 +95,13 @@ class ExpedienteDental(models.Model):
         db_table = "expediente_dental"
         ordering = ["-fecha_creacion"]
 
+    def dientes_unicos(self):
+        """Último tratamiento registrado por diente (sin repetidos)."""
+        vistos = {}
+        for h in self.historial_dientes.order_by("-fecha"):
+            vistos.setdefault(h.diente_fdi, h)
+        return list(vistos.values())
+
     def __str__(self):
         return f"Consulta {self.pk} - {self.paciente.full_name}"
 

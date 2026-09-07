@@ -1,9 +1,11 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, DetailView, CreateView, ListView
 from django.urls import reverse_lazy
 
 from .models import (
+    TIPO_TRATAMIENTO,
     ExpedienteDental, HistorialDiente, ServicioDental,
     OrdenDental, DIENTE_FDI, COLOR_DIENTE,
 )
@@ -18,29 +20,45 @@ DIENTE_NUMS_INFERIOR = ["48","47","46","45","44","43","42","41",
 
 
 class OdontogramaView(LoginRequiredMixin, TemplateView):
-    """Odontograma interactivo de un paciente."""
+    """Odontograma FDI interactivo: hover muestra historial, clic registra tratamiento."""
     template_name = "clinical/odontograma.html"
+
+    def post(self, request, paciente_id):
+        paciente = get_object_or_404(Paciente, pk=paciente_id)
+        diente = request.POST.get("diente", "")
+        tipo = request.POST.get("tipo", "")
+        notas = request.POST.get("notas", "").strip()
+        expediente = paciente.expedientes_dentales.order_by("-fecha_creacion").first()
+        if expediente is None:
+            expediente = ExpedienteDental.objects.create(
+                paciente=paciente,
+                motivo="Registro de odontograma",
+                creado_por=request.user,
+            )
+        HistorialDiente.objects.create(
+            expediente=expediente,
+            paciente=paciente,
+            diente_fdi=diente,
+            tipo=tipo,
+            notas=notas,
+        )
+        messages.success(request, f"Diente {diente}: {dict(TIPO_TRATAMIENTO).get(tipo, tipo)} registrado.")
+        return redirect("clinical:odontograma", paciente_id=paciente.pk)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         paciente = get_object_or_404(Paciente, pk=self.kwargs["paciente_id"])
 
-        # Último tratamiento por diente → dict {fdi: {color, tipo_display, fecha, notas}}
         colores = {}
         historial = {}
-        ultimos = []
-        vistos = set()
         for h in HistorialDiente.objects.filter(paciente=paciente).order_by("-fecha"):
-            if h.diente_fdi not in vistos:
-                vistos.add(h.diente_fdi)
-                ultimos.append(h)
-        for h in ultimos:
-            colores[h.diente_fdi] = h.color
-            historial[h.diente_fdi] = {
+            colores.setdefault(h.diente_fdi, h.color)
+            historial.setdefault(h.diente_fdi, []).append({
                 "tipo_display": h.get_tipo_display(),
                 "fecha": h.fecha.strftime("%d/%m/%Y"),
                 "notas": h.notas,
-            }
+                "color": h.color,
+            })
 
         ctx.update({
             "paciente": paciente,
@@ -48,6 +66,7 @@ class OdontogramaView(LoginRequiredMixin, TemplateView):
             "diente_nums_inferior": DIENTE_NUMS_INFERIOR,
             "colores_paciente": colores,
             "historial_paciente": historial,
+            "tipos_tratamiento": TIPO_TRATAMIENTO,
             "colores_leyenda": [
                 ("Sano", COLOR_DIENTE["sano"]),
                 ("Caries", COLOR_DIENTE["caries"]),

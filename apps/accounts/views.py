@@ -30,59 +30,52 @@ from django.core.cache import cache
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
+    """Panel principal con métricas dentales."""
     template_name = "dashboard.html"
 
     def get_context_data(self, **kwargs):
+        from datetime import date
+
+        from django.db.models import Count, Sum
+
+        from apps.billing.models import DetalleFactura, Factura
+        from apps.clinical.models import ExpedienteDental, OrdenDental, ServicioDental
+        from apps.doctors.models import Medico
+        from apps.patients.models import Paciente
+
         context = super().get_context_data(**kwargs)
-
-        # Caché de estadísticas (60s): evita ~8 queries por request
-        cached = cache.get("dashboard_stats")
-        if cached:
-            context.update(cached)
-            context["modo_escritorio"] = settings.ESCRITORIO
-            return context
-
-        stats = {}
-        stats["total_pacientes"] = Paciente.objects.filter(activo=True).count()
-        stats["total_medicos"] = Medico.objects.filter(activo=True).count()
-        stats["total_examenes"] = ServicioDental.objects.filter(activo=True).count()
-        stats["total_resultados"] = ExpedienteDental.objects.count()
-        stats["pacientes_del_dia"] = Paciente.objects.filter(
-            expedientes_dentales__fecha_creacion__date=date.today(),
-            activo=True,
-        ).distinct().count()
-        # Métricas de órdenes
-        stats["ordenes_abiertas"] = OrdenDental.objects.filter(estado__in=["abierta", "en_proceso"]).count()
-        stats["ordenes_cerradas_hoy"] = OrdenDental.objects.filter(estado="completada", fecha_creacion__date=date.today()).count()
-
-        # Ingresos del día (facturas emitidas)
-        stats["ingresos_hoy"] = Factura.objects.filter(
-            fecha_creacion__date=date.today(),
-            estado="emitida"
-        ).aggregate(total=models.Sum("total"))["total"] or 0
-
-        # Ingresos del mes
-        primer_dia_mes = date.today().replace(day=1)
-        stats["ingresos_mes"] = Factura.objects.filter(
-            fecha_creacion__date__gte=primer_dia_mes,
-            estado="emitida"
-        ).aggregate(total=models.Sum("total"))["total"] or 0
-
-        # Top 5 exámenes más solicitados (últimos 30 días)
-        treinta_dias = timezone.now() - timezone.timedelta(days=30)
-        stats["top_examenes"] = list(
-            DetalleFactura.objects.values("servicio__nombre")
-            .annotate(total=models.Count("id"))
-            .order_by("-total")[:5]
-        )
-
-        cache.set("dashboard_stats", stats, 60)
+        hoy = date.today()
+        stats = {
+            "total_pacientes": Paciente.objects.filter(activo=True).count(),
+            "total_medicos": Medico.objects.filter(activo=True).count(),
+            "total_examenes": ServicioDental.objects.filter(activo=True).count(),
+            "total_resultados": ExpedienteDental.objects.count(),
+            "pacientes_del_dia": Paciente.objects.filter(
+                expedientes_dentales__fecha_creacion__date=hoy
+            ).distinct().count(),
+            "ordenes_abiertas": OrdenDental.objects.filter(
+                estado__in=["abierta", "en_proceso"]
+            ).count(),
+            "ordenes_cerradas_hoy": OrdenDental.objects.filter(
+                estado="completada", fecha_creacion__date=hoy
+            ).count(),
+            "ingresos_hoy": Factura.objects.filter(
+                estado="emitida", fecha_creacion__date=hoy
+            ).aggregate(t=Sum("total"))["t"] or 0,
+            "ingresos_mes": Factura.objects.filter(
+                estado="emitida", fecha_creacion__date__gte=hoy.replace(day=1)
+            ).aggregate(t=Sum("total"))["t"] or 0,
+            "top_examenes": list(
+                DetalleFactura.objects.values("servicio__nombre")
+                .annotate(total=Count("id"))
+                .order_by("-total")[:5]
+            ),
+        }
         context.update(stats)
         context["modo_escritorio"] = settings.ESCRITORIO
         return context
 
 
-# ================= ASISTENTE DE PRIMERA EJECUCIÓN =================
 
 class ConfiguracionInicialView(View):
     """Primera vez que se abre la app: el cliente crea su cuenta principal"""
