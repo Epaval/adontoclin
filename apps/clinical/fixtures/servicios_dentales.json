@@ -1,0 +1,12 @@
+[
+  {"model":"clinical.serviciodental","pk":1,"fields":{"codigo":"LIM","nombre":"Limpieza dental (profilaxis)","descripcion":"Limpieza profunda con ultrasonido","precio_usd":"30.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":2,"fields":{"codigo":"OBT","nombre":"Obturación (empaste)","descripcion":"Resina compuesta","precio_usd":"40.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":3,"fields":{"codigo":"EXT","nombre":"Extracción simple","descripcion":"Extracción de pieza dental","precio_usd":"50.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":4,"fields":{"codigo":"EXTC","nombre":"Extracción compleja","descripcion":"Muela del juicio / incluida","precio_usd":"120.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":5,"fields":{"codigo":"END","nombre":"Endodoncia","descripcion":"Tratamiento de conducto","precio_usd":"180.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":6,"fields":{"codigo":"COR","nombre":"Corona dental","descripcion":"Porcelana o zirconio","precio_usd":"350.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":7,"fields":{"codigo":"IMP","nombre":"Implante dental","descripcion":"Implante de titanio + corona","precio_usd":"800.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":8,"fields":{"codigo":"ORT","nombre":"Ortodoncia","descripcion":"Brackets metálicos (mensual)","precio_usd":"60.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":9,"fields":{"codigo":"BLA","nombre":"Blanqueamiento dental","descripcion":"Blanqueamiento en consultorio","precio_usd":"250.00","activo":true}},
+  {"model":"clinical.serviciodental","pk":10,"fields":{"codigo":"RX","nombre":"Radiografía periapical","descripcion":"Placa individual","precio_usd":"10.00","activo":true}}
+]

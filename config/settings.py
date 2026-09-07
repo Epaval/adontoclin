@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "apps.patients",
     "apps.results",
     "apps.billing",
+    "apps.clinical",
 ]
 
 # unaccent nativo solo en modo web (PostgreSQL)
