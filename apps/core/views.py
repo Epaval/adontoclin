@@ -52,8 +52,9 @@ class BusquedaGlobalView(LoginRequiredMixin, TemplateView):
         q = self.request.GET.get("q", "").strip()
         ctx["q"] = q
         if q and len(q) >= 2:
-            from apps.patients.models import Paciente, Expediente
-            from apps.exams.models import Examen
+            from apps.patients.models import Paciente
+            from apps.clinical.models import OrdenDental as _OrdenDental
+            from apps.clinical.models import ServicioDental
             from django.db.models import Q
 
             ctx["pacientes"] = Paciente.objects.filter(
@@ -62,11 +63,13 @@ class BusquedaGlobalView(LoginRequiredMixin, TemplateView):
                 | Q(representante__telefono__icontains=q)
             ).filter(activo=True).select_related("representante")[:10]
 
-            ctx["ordenes"] = Expediente.objects.filter(
-                Q(paciente__nombres__icontains=q) | Q(paciente__apellidos__icontains=q) | Q(paciente__ci__icontains=q)
-            ).select_related("paciente").order_by("-fecha_creacion")[:10]
+            ctx["ordenes"] = _OrdenDental.objects.filter(
+                Q(expediente__paciente__nombres__icontains=q)
+                | Q(expediente__paciente__apellidos__icontains=q)
+                | Q(expediente__paciente__ci__icontains=q)
+            ).select_related("expediente__paciente").order_by("-fecha_creacion")[:10]
 
-            ctx["examenes"] = Examen.objects.filter(
-                Q(nombre_completo__icontains=q) | Q(perfil__icontains=q)
+            ctx["examenes"] = ServicioDental.objects.filter(
+                Q(nombre__icontains=q) | Q(codigo__icontains=q)
             ).filter(activo=True)[:10]
         return ctx

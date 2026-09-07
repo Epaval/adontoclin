@@ -87,8 +87,8 @@
     </tr>
     {% for d in detalles %}
       <tr>
-        <td>{{ d.examen.nombre_completo }}</td>
-        <td>{{ d.examen.perfil|default:"General" }}</td>
+        <td>{{ d.servicio.nombre }}</td>
+        <td>{{ d.diente_fdi|default:"-" }}</td>
         <td class="centro">{{ d.cantidad }}</td>
         <td class="derecha">Bs {{ d.precio_bs|floatformat:2 }} <span class="sub">($ {{ d.precio_unitario|floatformat:2 }})</span></td>
         <td class="derecha">Bs {{ d.subtotal_bs|floatformat:2 }}</td>

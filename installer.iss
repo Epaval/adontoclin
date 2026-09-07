@@ -1,9 +1,9 @@
 [Setup]
 AppName=OdontoClin
 AppVersion=0.1.0
-AppPublisher=Tu Laboratorio Software
-DefaultDirName={autopf}\LabClinico
-DefaultGroupName=Lab Clínico
+AppPublisher=OdontoClin Software
+DefaultDirName={autopf}\OdontoClin
+DefaultGroupName=OdontoClin
 OutputDir=instalador
 OutputBaseFilename=OdontoClin-Setup-0.1.0
 Compression=lzma2/ultra64
@@ -19,24 +19,24 @@ Name: "desktopicon"; Description: "Crear ícono en el escritorio"
 Name: "autoiniciar"; Description: "Iniciar servidor al encender Windows"; GroupDescription: "Servidor:"; Flags: unchecked; Check: IsServidor
 
 [Files]
-Source: "dist\LabClinico\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\OdontoClin\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "icons\*.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Lab Clínico"; Filename: "{app}\LabClinico.exe"; IconFilename: "{app}\icons\icono_principal.ico"; Check: NotIsEstacion
-Name: "{group}\Lab Clínico Servidor (red)"; Filename: "{app}\LabClinico.exe"; Parameters: "--lan --sin-ventana"; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
-Name: "{group}\Lab Clínico Estación"; Filename: "{app}\LabClinico.exe"; Parameters: "--conectar"; IconFilename: "{app}\icons\icono_estacion.ico"; Check: IsEstacion
+Name: "{group}\OdontoClin"; Filename: "{app}\OdontoClin.exe"; IconFilename: "{app}\icons\icono_principal.ico"; Check: NotIsEstacion
+Name: "{group}\OdontoClin Servidor (red)"; Filename: "{app}\OdontoClin.exe"; Parameters: "--lan --sin-ventana"; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
+Name: "{group}\OdontoClin Estación"; Filename: "{app}\OdontoClin.exe"; Parameters: "--conectar"; IconFilename: "{app}\icons\icono_estacion.ico"; Check: IsEstacion
 
-Name: "{autodesktop}\Lab Clínico"; Filename: "{app}\LabClinico.exe"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_principal.ico"; Check: NotIsEstacion
-Name: "{autodesktop}\Lab Clínico Servidor"; Filename: "{app}\LabClinico.exe"; Parameters: "--lan --sin-ventana"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
-Name: "{autodesktop}\Lab Clínico Estación"; Filename: "{app}\LabClinico.exe"; Parameters: "--conectar"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_estacion.ico"; Check: IsEstacion
+Name: "{autodesktop}\OdontoClin"; Filename: "{app}\OdontoClin.exe"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_principal.ico"; Check: NotIsEstacion
+Name: "{autodesktop}\OdontoClin Servidor"; Filename: "{app}\OdontoClin.exe"; Parameters: "--lan --sin-ventana"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
+Name: "{autodesktop}\OdontoClin Estación"; Filename: "{app}\OdontoClin.exe"; Parameters: "--conectar"; Tasks: desktopicon; IconFilename: "{app}\icons\icono_estacion.ico"; Check: IsEstacion
 
-Name: "{userstartup}\Lab Clínico Servidor"; Filename: "{app}\LabClinico.exe"; Parameters: "--lan --sin-ventana"; Tasks: autoiniciar; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
+Name: "{userstartup}\OdontoClin Servidor"; Filename: "{app}\OdontoClin.exe"; Parameters: "--lan --sin-ventana"; Tasks: autoiniciar; IconFilename: "{app}\icons\icono_servidor.ico"; Check: IsServidor
 
 [Run]
-Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Lab Clinico"" dir=in action=allow program=""{app}\LabClinico.exe"" enable=yes"; Flags: runhidden; Check: IsServidor
-Filename: "{app}\LabClinico.exe"; Parameters: "--conectar"; Description: "Abrir Lab Clínico Estación ahora"; Flags: nowait postinstall skipifsilent; Check: IsEstacion
-Filename: "{app}\LabClinico.exe"; Description: "Abrir Lab Clínico ahora"; Flags: nowait postinstall skipifsilent; Check: NotIsEstacion
+Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""OdontoClin"" dir=in action=allow program=""{app}\OdontoClin.exe"" enable=yes"; Flags: runhidden; Check: IsServidor
+Filename: "{app}\OdontoClin.exe"; Parameters: "--conectar"; Description: "Abrir OdontoClin Estación ahora"; Flags: nowait postinstall skipifsilent; Check: IsEstacion
+Filename: "{app}\OdontoClin.exe"; Description: "Abrir OdontoClin ahora"; Flags: nowait postinstall skipifsilent; Check: NotIsEstacion
 
 [Code]
 var

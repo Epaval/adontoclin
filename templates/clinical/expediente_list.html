@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900">📋 Expedientes dentales</h1>
+        <p class="text-sm text-slate-500 mt-0.5">Consultas con patologías, alergias, operaciones y adjuntos</p>
+      </div>
+      <a href="{% url 'clinical:expediente_create' %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">+ Nueva consulta</a>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+        <tr><th class="px-4 py-3 text-left">Paciente</th><th class="px-4 py-3 text-left">Fecha</th><th class="px-4 py-3 text-left">Motivo</th><th class="px-4 py-3 text-center">Dientes</th><th class="px-4 py-3 text-right">Acciones</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for e in expedientes %}
+        <tr>
+          <td class="px-4 py-3 font-medium text-slate-900">{{ e.paciente.full_name }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ e.fecha_creacion|date:"d/m/Y H:i" }}</td>
+          <td class="px-4 py-3 text-slate-600">{{ e.motivo|truncatechars:50|default:"-" }}</td>
+          <td class="px-4 py-3 text-center">{{ e.historial_dientes.count }}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="{% url 'clinical:odontograma' e.paciente.pk %}" class="text-sky-600 font-semibold text-xs mr-3">🦷 Odontograma</a>
+            <a href="{% url 'patients:historial' e.paciente.pk %}" class="text-emerald-600 font-semibold text-xs">Historial</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Sin expedientes. Crea la primera consulta.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

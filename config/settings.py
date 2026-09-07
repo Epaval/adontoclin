@@ -70,16 +70,14 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.accounts",
     "apps.doctors",
-    "apps.exams",
     "apps.patients",
-    "apps.results",
     "apps.billing",
     "apps.clinical",
 ]
 
 # unaccent nativo solo en modo web (PostgreSQL)
 if not ESCRITORIO:
-    INSTALLED_APPS.append("django.contrib.postgres")
+    INSTALLED_APPS.append("")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -124,7 +122,7 @@ if ESCRITORIO:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": DATA_DIR / "labclin.db",
+            "NAME": DATA_DIR / "odontoclin.db",
             "OPTIONS": {"timeout": 30},
         }
     }

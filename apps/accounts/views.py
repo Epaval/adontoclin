@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.db import models
-from apps.billing.models import Factura
+from apps.billing.models import DetalleFactura, Factura
 from datetime import date
 from django.conf import settings
 from django.contrib import messages
@@ -14,9 +14,8 @@ from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from apps.doctors.models import Medico
-from apps.exams.models import Examen
-from apps.patients.models import Paciente, Expediente
-from apps.results.models import Resultado
+from apps.clinical.models import ServicioDental, ExpedienteDental, OrdenDental
+from apps.patients.models import Paciente
 
 from .forms import (
     RecuperarClaveForm,
@@ -46,18 +45,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         stats = {}
         stats["total_pacientes"] = Paciente.objects.filter(activo=True).count()
         stats["total_medicos"] = Medico.objects.filter(activo=True).count()
-        stats["total_examenes"] = Examen.objects.filter(activo=True).count()
-        stats["total_resultados"] = Resultado.objects.count()
+        stats["total_examenes"] = ServicioDental.objects.filter(activo=True).count()
+        stats["total_resultados"] = ExpedienteDental.objects.count()
         stats["pacientes_del_dia"] = Paciente.objects.filter(
-            expedientes__fecha_creacion__date=date.today(),
+            expedientes_dentales__fecha_creacion__date=date.today(),
             activo=True,
         ).distinct().count()
         # Métricas de órdenes
-        stats["ordenes_abiertas"] = Expediente.objects.filter(estado__in=["abierto", "procesando"]).count()
-        stats["ordenes_cerradas_hoy"] = Expediente.objects.filter(
-            estado="cerrado",
-            fecha_creacion__date=date.today()
-        ).count()
+        stats["ordenes_abiertas"] = OrdenDental.objects.filter(estado__in=["abierta", "en_proceso"]).count()
+        stats["ordenes_cerradas_hoy"] = OrdenDental.objects.filter(estado="completada", fecha_creacion__date=date.today()).count()
 
         # Ingresos del día (facturas emitidas)
         stats["ingresos_hoy"] = Factura.objects.filter(
@@ -75,8 +71,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Top 5 exámenes más solicitados (últimos 30 días)
         treinta_dias = timezone.now() - timezone.timedelta(days=30)
         stats["top_examenes"] = list(
-            Resultado.objects.filter(fecha_creacion__gte=treinta_dias)
-            .values("examen__nombre_completo")
+            DetalleFactura.objects.values("servicio__nombre")
             .annotate(total=models.Count("id"))
             .order_by("-total")[:5]
         )

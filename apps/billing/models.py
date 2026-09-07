@@ -27,8 +27,8 @@ class Factura(models.Model):
         help_text="Formato fiscal: 00-NNNNN (auto-generado)",
     )
 
-    expediente = models.ForeignKey(
-        "patients.Expediente",
+    orden = models.ForeignKey(
+        "clinical.OrdenDental",
         on_delete=models.PROTECT,
         related_name="facturas",
     )
@@ -72,7 +72,7 @@ class Factura(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return f"{self.numero} · {self.expediente.paciente}"
+        return f"{self.numero} · {self.orden.expediente.paciente}"
 
 
 class DetalleFactura(models.Model):
@@ -81,11 +81,12 @@ class DetalleFactura(models.Model):
         on_delete=models.CASCADE,
         related_name="detalles",
     )
-    examen = models.ForeignKey(
-        "exams.Examen",
+    servicio = models.ForeignKey(
+        "clinical.ServicioDental",
         on_delete=models.PROTECT,
         related_name="detalles_factura",
     )
+    diente_fdi = models.CharField("Diente", max_length=2, blank=True)
     cantidad = models.PositiveIntegerField(default=1)
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2)
@@ -94,10 +95,10 @@ class DetalleFactura(models.Model):
         db_table = "detalle_factura"
         constraints = [
             models.UniqueConstraint(
-                fields=["factura", "examen"],
-                name="uniq_factura_examen",
+                fields=["factura", "servicio", "diente_fdi"],
+                name="uniq_factura_servicio_diente",
             ),
         ]
 
     def __str__(self):
-        return f"{self.factura.numero}: {self.examen}"
+        return f"{self.factura.numero}: {self.servicio}"

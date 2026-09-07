@@ -190,7 +190,7 @@
 </head>
 <body>
   <header>
-    <strong><a href="{% url 'dashboard' %}">Lab Clínico</a></strong>
+    <strong><a href="{% url 'dashboard' %}">OdontoClin</a></strong>
     {% if user.is_authenticated %}
       <span style="color: #6b7280; font-size: 14px;">
         {{ user.full_name }}
@@ -229,7 +229,7 @@
   </div>
 
   <footer>
-    Sistema de Laboratorio Clínico · {% now "Y" %}
+    Sistema de Odontología · {% now "Y" %}
   </footer>
 </body>
 </html>

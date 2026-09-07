@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Resultados de búsqueda · Lab Clínico{% endblock %}
+{% block title %}Resultados de búsqueda · OdontoClin{% endblock %}
 {% block page_title %}Resultados para "{{ q }}"{% endblock %}
 
 {% block content %}
@@ -38,9 +38,9 @@
     </div>
     <div class="divide-y divide-slate-100">
       {% for ord in ordenes %}
-      <a href="{% url 'patients:orden_detail' ord.pk %}" class="block px-6 py-4 hover:bg-slate-50 transition-colors">
+      <a href="{% url 'patients:historial' ord.expediente.paciente.pk %}" class="block px-6 py-4 hover:bg-slate-50 transition-colors">
         <p class="text-sm font-semibold text-slate-800">Orden #{{ ord.pk }}</p>
-        <p class="text-xs text-slate-500">{{ ord.paciente.full_name }} · {{ ord.fecha_creacion|date:"d/m/Y H:i" }}</p>
+        <p class="text-xs text-slate-500">{{ ord.expediente.paciente.full_name }} · {{ ord.fecha_creacion|date:"d/m/Y H:i" }}</p>
       </a>
       {% endfor %}
     </div>

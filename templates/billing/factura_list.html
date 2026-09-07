@@ -42,8 +42,8 @@
           <tr class="hover:bg-slate-50/80 transition-colors">
             <td class="px-6 py-4 text-sm font-bold text-emerald-600">{{ factura.numero }}</td>
             <td class="px-6 py-4">
-              <div class="text-sm font-medium text-slate-800">{{ factura.expediente.paciente.full_name }}</div>
-              <div class="text-xs text-slate-400">Orden #{{ factura.expediente.pk }}</div>
+              <div class="text-sm font-medium text-slate-800">{{ factura.orden.expediente.paciente.full_name }}</div>
+              <div class="text-xs text-slate-400">Orden #{{ factura.orden.expediente.pk }}</div>
             </td>
             <td class="px-6 py-4 text-sm font-bold text-slate-800">${{ factura.total }}</td>
             <td class="px-6 py-4">

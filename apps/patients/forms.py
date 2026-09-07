@@ -1,9 +1,9 @@
 from django import forms
 
 from apps.doctors.models import Medico
-from apps.exams.models import Examen
 
-from .models import Expediente, Paciente
+
+from .models import Paciente
 
 
 class PacienteForm(forms.ModelForm):
@@ -77,31 +77,3 @@ class PacienteForm(forms.ModelForm):
             self.fields["fecha_nac"].help_text = "La fecha de nacimiento no se puede modificar"
 
 
-class ExpedienteForm(forms.ModelForm):
-    examenes = forms.ModelMultipleChoiceField(
-        queryset=Examen.objects.filter(activo=True),
-        required=True,
-        label="Exámenes a realizar",
-    )
-    medicos = forms.ModelMultipleChoiceField(
-        queryset=Medico.objects.filter(activo=True),
-        required=False,
-        label="Médicos solicitantes (opcional)",
-        widget=forms.SelectMultiple(attrs={"size": 4}),
-    )
-
-    class Meta:
-        model = Expediente
-        fields = ["paciente", "bioanalista", "observaciones"]
-        widgets = {
-            "observaciones": forms.Textarea(attrs={
-                "rows": 3,
-                "placeholder": "Indicaciones o notas de la orden...",
-            }),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["paciente"].queryset = (
-            Paciente.objects.filter(activo=True).order_by("apellidos", "nombres")
-        )

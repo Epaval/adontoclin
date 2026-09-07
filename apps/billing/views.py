@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from apps.patients.models import Expediente
+from apps.clinical.models import OrdenDental
 
 from .models import Factura
 from .services import generar_factura, generar_pdf_factura
@@ -52,21 +52,18 @@ class FacturaDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
 
 
 class FacturaCreateView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """Genera factura en $ desde una orden dental."""
     permission_required = "billing.add_factura"
 
-    def post(self, request, expediente_pk):
-        expediente = get_object_or_404(Expediente, pk=expediente_pk)
-
+    def post(self, request, orden_pk):
+        orden = get_object_or_404(OrdenDental, pk=orden_pk)
         try:
-            factura = generar_factura(expediente, request.user)
-            messages.success(
-                request,
-                f"Factura {factura.numero} generada por ${factura.total}",
-            )
+            factura = generar_factura(orden, request.user)
+            messages.success(request, f"Factura {factura.numero} generada por ${factura.total}")
             return redirect("billing:detail", pk=factura.pk)
         except ValueError as exc:
             messages.error(request, str(exc))
-            return redirect("patients:orden_detail", pk=expediente.pk)
+            return redirect("clinical:expediente_list")
 
 
 class FacturaPagarView(LoginRequiredMixin, PermissionRequiredMixin, View):

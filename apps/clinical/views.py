@@ -28,11 +28,12 @@ class OdontogramaView(LoginRequiredMixin, TemplateView):
         # Último tratamiento por diente → dict {fdi: {color, tipo_display, fecha, notas}}
         colores = {}
         historial = {}
-        ultimos = (
-            HistorialDiente.objects.filter(paciente=paciente)
-            .order_by("diente_fdi", "-fecha")
-            .distinct("diente_fdi")
-        )
+        ultimos = []
+        vistos = set()
+        for h in HistorialDiente.objects.filter(paciente=paciente).order_by("-fecha"):
+            if h.diente_fdi not in vistos:
+                vistos.add(h.diente_fdi)
+                ultimos.append(h)
         for h in ultimos:
             colores[h.diente_fdi] = h.color
             historial[h.diente_fdi] = {
@@ -68,3 +69,22 @@ class ExpedienteDentalListView(LoginRequiredMixin, ListView):
     template_name = "clinical/expediente_list.html"
     context_object_name = "expedientes"
     paginate_by = 10
+
+
+class ServicioDentalListView(LoginRequiredMixin, ListView):
+    model = ServicioDental
+    template_name = "clinical/servicio_list.html"
+    context_object_name = "servicios"
+    paginate_by = 12
+
+
+class ExpedienteDentalCreateView(LoginRequiredMixin, CreateView):
+    model = ExpedienteDental
+    fields = ["paciente", "motivo", "patologias", "alergias", "operaciones", "notas", "archivo_adjunto"]
+    template_name = "form.html"
+    success_url = reverse_lazy("clinical:expediente_list")
+    extra_context = {"title": "Nueva consulta dental"}
+
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)

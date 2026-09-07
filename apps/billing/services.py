@@ -27,56 +27,48 @@ def _generar_numero_control():
     return f"00-{maximo + 1:05d}"
 
 
-def generar_factura(expediente, usuario, descuento=Decimal("0")):
-    """
-    Genera la factura de una orden tomando los exámenes realizados
-    y congelando el precio vigente de cada examen al momento de facturar.
-    """
+def generar_factura(orden, usuario, descuento=Decimal("0")):
+    """Crea una factura en $ desde una orden dental (se convierte a Bs con la tasa)."""
+    from apps.core.models import TasaCambio
+
     with transaction.atomic():
-        if expediente.facturas.exclude(estado="anulada").exists():
-            raise ValueError("Esta orden ya tiene una factura activa")
-
-        realizados = (
-            expediente.resultados.filter(estado__in=ESTADOS_REALIZADOS)
-            .select_related("examen")
-        )
-
-        if not realizados.exists():
-            raise ValueError("La orden aún no tiene exámenes realizados para facturar")
-
-        ultima = Factura.objects.order_by("-id").first()
-        numero = f"F-{(ultima.id + 1) if ultima else 1:06d}"
-
-        factura = Factura.objects.create(
-            numero=numero,
+        factura = Factura(
+            numero=_generar_numero(),
             numero_control=_generar_numero_control(),
-            expediente=expediente,
-            descuento=descuento,
+            orden=orden,
             creado_por=usuario,
         )
-
+        factura.save()
         subtotal = Decimal("0")
-        for resultado in realizados:
-            costo = resultado.examen.costo_actual
-            precio = costo.precio if costo else Decimal("0")
-
+        for item in orden.items.select_related("servicio").all():
             DetalleFactura.objects.create(
                 factura=factura,
-                examen=resultado.examen,
-                cantidad=1,
-                precio_unitario=precio,
-                subtotal=precio,
+                servicio=item.servicio,
+                diente_fdi=item.diente_fdi,
+                cantidad=item.cantidad,
+                precio_unitario=item.precio_usd,
+                subtotal=item.subtotal_usd,
             )
-            subtotal += precio
-
-        factura.subtotal = subtotal
-        factura.total = max(subtotal - descuento, Decimal("0"))
-        from apps.core.models import TasaCambio
+            subtotal += item.subtotal_usd
         _t = TasaCambio.actual()
         factura.tasa = _t.valor if _t else Decimal("0")
+        factura.subtotal = subtotal
+        factura.total = max(subtotal - descuento, Decimal("0"))
         factura.save(update_fields=["subtotal", "total", "tasa"])
-
+        orden.estado = "completada"
+        orden.save(update_fields=["estado"])
         return factura
+
+
+def _generar_numero():
+    ultimo = Factura.objects.order_by("-id").values_list("numero", flat=True).first()
+    n = 1
+    if ultimo:
+        try:
+            n = int(ultimo.split("-")[1]) + 1
+        except Exception:
+            n = Factura.objects.count() + 1
+    return f"F-{n:06d}"
 
 
 # ================= PDF DE FACTURA =================

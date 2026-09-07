@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><title>Licencia · Lab Clínico</title>
+<html lang="es"><head><meta charset="utf-8"><title>Licencia · OdontoClin</title>
 <style>
 body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:40px}
 .card{max-width:680px;margin:0 auto;background:#1e293b;border-radius:14px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
@@ -13,7 +13,7 @@ a{color:#7dd3fc}
 </style></head><body>
 <div class="card">
 <h1>🔑 Licencia del sistema</h1>
-<p class="sub">Panel de administración · Lab Clínico</p>
+<p class="sub">Panel de administración · OdontoClin</p>
 <div class="row"><span>Estado</span><b class="{% if lic.estado == 'activada' %}ok{% elif lic.estado == 'prueba' %}warn{% else %}bad{% endif %}">{{ lic.estado|upper }}</b></div>
 <div class="row"><span>Tipo de licencia</span><b>{{ lic.tipo|upper }}</b></div>
 <div class="row"><span>Días restantes</span><b>{% if lic.dias > 90000 %}∞ (perpetua){% else %}{{ lic.dias }}{% endif %}</b></div>

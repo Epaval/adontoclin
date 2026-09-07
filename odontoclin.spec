@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 hiddenimports = [
     "apps.accounts.management.commands.seed_datos",
-    "apps.exams.management.commands.seed_catalogo",
+    "apps.clinical.models",
     "apps.accounts.management.commands.seed_roles",
     # Terceros usados en apps/config (archivos fuente, no se analizan solos)
     'environ', 'django_environ',
@@ -77,7 +77,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='LabClinico',
+    name='OdontoClin',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -97,5 +97,5 @@ coll = COLLECT(
     a.datas,
     strip=False,
     upx=True,
-    name='LabClinico',
+    name='OdontoClin',
 )

@@ -9,6 +9,7 @@ from . import views as error_views
 from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, LicenciaView
 
 urlpatterns = [
+    path("clinical/", include("apps.clinical.urls")),
     path("admin/", admin.site.urls),
     path("", DashboardView.as_view(), name="dashboard"),
     path("buscar/", BusquedaGlobalView.as_view(), name="busqueda_global"),
@@ -23,8 +24,6 @@ urlpatterns = [
     path("accounts/", include("apps.accounts.urls")),
     path("pacientes/", include("apps.patients.urls")),
     path("medicos/", include("apps.doctors.urls")),
-    path("examenes/", include("apps.exams.urls")),
-    path("resultados/", include("apps.results.urls")),
     path("facturas/", include("apps.billing.urls")),
 ]
 
