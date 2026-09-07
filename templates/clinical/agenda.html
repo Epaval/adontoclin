@@ -48,6 +48,31 @@
     </div>
   </div>
 
+  <form method="get" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+    <label style="font-size:12px;color:#94a3b8;font-weight:700">Ir a fecha:</label>
+    <input type="date" name="fecha_ir" style="padding:7px 10px;border-radius:10px;background:#1e293b;border:1px solid #334155;color:#e2e8f0;font-size:13px">
+    <button class="ag-btn" type="submit">Buscar</button>
+    {% if dia_sel %}<a class="ag-btn" href="?mes={{ mes_actual }}">Quitar filtro</a>{% endif %}
+  </form>
+
+  {% if dia_sel %}
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:14px;margin-bottom:14px">
+    <h3 style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:8px">📌 Citas del {{ dia_sel }} de {{ mes_nombre }}</h3>
+    {% for c in citas_dia %}
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#0f172a;margin-bottom:6px">
+      <a href="{% url 'patients:historial' c.expediente.paciente.pk %}" style="font-size:13px;font-weight:700;color:#7dd3fc">{{ c.fecha|date:"H:i" }} · {{ c.expediente.paciente.full_name }} <span style="color:#64748b;font-weight:400">({{ c.get_estado_display }})</span></a>
+      {% if c.estado != 'cancelada' %}
+      <form method="post" action="{% url 'clinical:cita_anular' c.pk %}" onsubmit="return confirm('¿Anular esta cita?')">{% csrf_token %}
+        <button style="padding:5px 10px;border-radius:8px;background:rgba(220,38,38,.15);color:#fca5a5;font-size:11px;font-weight:700">🚫 Anular</button>
+      </form>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p style="font-size:12px;color:#64748b">Sin citas ese día.</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <div class="ag-stats">
     <span class="ag-stat">Citas del mes: <b>{{ resumen.total }}</b></span>
     <span class="ag-stat" style="border-color:#0ea5e9">Programadas: <b style="color:#7dd3fc">{{ resumen.programadas }}</b></span>

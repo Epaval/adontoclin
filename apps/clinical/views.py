@@ -91,6 +91,19 @@ class CitaDentalCreateView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        from datetime import datetime, timedelta
+        fecha = form.cleaned_data.get("fecha")
+        if fecha and fecha < datetime.now():
+            messages.error(self.request, "No se pueden agendar citas en fecha pasada.")
+            return self.form_invalid(form)
+        if fecha:
+            solape = CitaDental.objects.filter(
+                fecha__gte=fecha - timedelta(minutes=90),
+                fecha__lte=fecha + timedelta(minutes=90),
+            ).exclude(estado="cancelada").first()
+            if solape:
+                messages.error(self.request, f"Solape: mínimo 90 min entre citas (hay una a las {solape.fecha:%H:%M} del {solape.fecha:%d/%m}).")
+                return self.form_invalid(form)
         expediente, _ = ExpedienteDental.objects.get_or_create(
             paciente=self.paciente,
             defaults={"creado_por": self.request.user},
@@ -340,6 +353,17 @@ class AgendaView(LoginRequiredMixin, TemplateView):
     """Calendario mensual de citas (100% offline: reloj del servidor)."""
     template_name = "clinical/agenda.html"
 
+    def get(self, request, *args, **kwargs):
+        fecha_ir = request.GET.get("fecha_ir", "")
+        if fecha_ir:
+            from datetime import date as _d
+            try:
+                f = _d.fromisoformat(fecha_ir)
+                return redirect(f"/clinical/agenda/?mes={f.year}-{f.month:02d}&dia={f.day}")
+            except Exception:
+                pass
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         import calendar as cal
         from datetime import date, datetime
@@ -371,7 +395,15 @@ class AgendaView(LoginRequiredMixin, TemplateView):
         py = y if m > 1 else y - 1
         nm = m + 1 if m < 12 else 1
         ny = y if m < 12 else y + 1
+        dia_sel = None
+        citas_dia = []
+        try:
+            dia_sel = int(self.request.GET.get("dia", ""))
+            citas_dia = por_dia.get(dia_sel, [])
+        except Exception:
+            dia_sel = None
         ctx.update({
+            "dia_sel": dia_sel, "citas_dia": citas_dia,
             "semanas": semanas, "por_dia": por_dia,
             "mes_nombre": f"{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m-1]} {y}",
             "mes_actual": f"{y}-{m:02d}",
@@ -394,7 +426,9 @@ class CitaNuevaView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        from datetime import datetime as _dt
         ctx["fecha_ini"] = self.request.GET.get("fecha", "")
+        ctx["fecha_min"] = _dt.now().strftime("%Y-%m-%dT%H:%M")
         return ctx
 
     def post(self, request):
@@ -412,14 +446,17 @@ class CitaNuevaView(LoginRequiredMixin, TemplateView):
         if paciente is None or fecha is None:
             messages.error(request, "Seleccione paciente y fecha/hora válidos.")
             return redirect("clinical:agenda")
+        if fecha < datetime.now():
+            messages.error(request, "No se pueden agendar citas en fecha pasada.")
+            return redirect("clinical:agenda")
         solape = CitaDental.objects.filter(
-            fecha__gte=fecha - timedelta(minutes=30),
-            fecha__lte=fecha + timedelta(minutes=30),
+            fecha__gte=fecha - timedelta(minutes=90),
+            fecha__lte=fecha + timedelta(minutes=90),
         ).exclude(estado="cancelada").first()
         if solape:
             messages.error(
                 request,
-                f"Solape: ya hay cita a las {solape.fecha:%H:%M} de {solape.expediente.paciente.full_name}.",
+                f"Solape: debe haber al menos 90 min entre citas. Ya hay una a las {solape.fecha:%H:%M} del {solape.fecha:%d/%m} de {solape.expediente.paciente.full_name}.",
             )
             return redirect("clinical:agenda")
         expediente, _ = ExpedienteDental.objects.get_or_create(
@@ -431,3 +468,13 @@ class CitaNuevaView(LoginRequiredMixin, TemplateView):
         )
         messages.success(request, f"Cita de {paciente.full_name} agendada {fecha:%d/%m %H:%M}.")
         return redirect("clinical:agenda")
+
+
+class CitaAnularView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        cita = get_object_or_404(CitaDental, pk=pk)
+        paciente_pk = cita.expediente.paciente.pk
+        cita.estado = "cancelada"
+        cita.save(update_fields=["estado"])
+        messages.success(request, f"Cita #{cita.pk} anulada.")
+        return redirect(request.META.get("HTTP_REFERER") or reverse_lazy("patients:historial", kwargs={"pk": paciente_pk}))
