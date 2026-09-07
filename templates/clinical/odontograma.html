@@ -6,7 +6,7 @@
 .odonto-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
 .odonto-arcada{display:flex;justify-content:center;gap:8px;padding:10px 0}
 .diente{width:34px;height:46px;position:relative;cursor:pointer;transition:transform .15s ease}
-.diente:hover{transform:scale(1.18);z-index:20}
+.diente:hover{scale:1.18;z-index:20}
 .diente svg{width:100%;height:100%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .diente-num{position:absolute;left:0;right:0;text-align:center;font-size:10px;color:#64748b;font-weight:700;font-family:monospace}
 .num-sup{bottom:-16px}.num-inf{top:-16px}
@@ -35,19 +35,22 @@
 
     <p class="text-xs text-slate-500 mb-2 text-center">Pasa el mouse sobre un diente para ver su historial · Haz clic para registrar un tratamiento</p>
 
-    <div class="odonto-arcada">
-      {% for num in diente_nums_superior %}
-      <div class="diente" data-fdi="{{ num }}" onclick="abrirModal('{{ num }}')">
-        <svg viewBox="0 0 34 46"><path d="M7 4 Q17 0 27 4 Q31 8 30 18 Q29 30 25 40 Q21 45 17 45 Q13 45 9 40 Q5 30 4 18 Q3 8 7 4 Z" fill="{{ colores_paciente|get_item:num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
-        <span class="diente-num num-sup">{{ num }}</span>
-        {% if historial_paciente|get_item:num %}
+    <div class="odonto-arcada" style="padding-bottom:30px">
+      {% for d in dientes_superior %}
+      <div class="diente" data-fdi="{{ d.num }}" style="transform:translateY({{ d.off }}px)" onclick="abrirModal('{{ d.num }}')">
+        <svg viewBox="0 0 34 46"><path d="M7 4 Q17 0 27 4 Q31 8 30 18 Q29 30 25 40 Q21 45 17 45 Q13 45 9 40 Q5 30 4 18 Q3 8 7 4 Z" fill="{{ colores_paciente|get_item:d.num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
+        <span class="diente-num num-sup">{{ d.num }}</span>
+        {% if historial_paciente|get_item:d.num %}
         <div class="odonto-tooltip">
-          <strong class="text-sky-400">Diente {{ num }}</strong>
-          {% for h in historial_paciente|get_item:num %}
+          <strong class="text-sky-400">Diente {{ d.num }}</strong>
+          {% for h in historial_paciente|get_item:d.num %}
           <div class="tooltip-line"><span class="tooltip-dot" style="background:{{ h.color }}"></span>{{ h.tipo_display }} · {{ h.fecha }}</div>
-          {% if h.notas %}<div class="text-slate-400 ml-3">{{ h.notas|truncatechars:40 }}</div>{% endif %}
           {% endfor %}
         </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
         {% endif %}
       </div>
       {% endfor %}
@@ -55,18 +58,22 @@
 
     <div class="odonto-sep"></div>
 
-    <div class="odonto-arcada">
-      {% for num in diente_nums_inferior %}
-      <div class="diente" data-fdi="{{ num }}" onclick="abrirModal('{{ num }}')">
-        <svg viewBox="0 0 34 46"><path d="M7 42 Q17 46 27 42 Q31 38 30 28 Q29 16 25 6 Q21 1 17 1 Q13 1 9 6 Q5 16 4 28 Q3 38 7 42 Z" fill="{{ colores_paciente|get_item:num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
-        <span class="diente-num num-inf">{{ num }}</span>
-        {% if historial_paciente|get_item:num %}
+    <div class="odonto-arcada" style="padding-top:30px">
+      {% for d in dientes_inferior %}
+      <div class="diente" data-fdi="{{ d.num }}" style="transform:translateY({{ d.off }}px)" onclick="abrirModal('{{ d.num }}')">
+        <svg viewBox="0 0 34 46"><path d="M7 42 Q17 46 27 42 Q31 38 30 28 Q29 16 25 6 Q21 1 17 1 Q13 1 9 6 Q5 16 4 28 Q3 38 7 42 Z" fill="{{ colores_paciente|get_item:d.num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
+        <span class="diente-num num-inf">{{ d.num }}</span>
+        {% if historial_paciente|get_item:d.num %}
         <div class="odonto-tooltip" style="top:calc(100% + 10px);bottom:auto">
-          <strong class="text-sky-400">Diente {{ num }}</strong>
-          {% for h in historial_paciente|get_item:num %}
+          <strong class="text-sky-400">Diente {{ d.num }}</strong>
+          {% for h in historial_paciente|get_item:d.num %}
           <div class="tooltip-line"><span class="tooltip-dot" style="background:{{ h.color }}"></span>{{ h.tipo_display }} · {{ h.fecha }}</div>
           {% endfor %}
         </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
         {% endif %}
       </div>
       {% endfor %}

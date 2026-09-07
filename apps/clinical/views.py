@@ -153,10 +153,20 @@ class OdontogramaView(LoginRequiredMixin, TemplateView):
                 "notas": h.notas,
                 "color": h.color,
             })
+        def _arcada(nums, forma):
+            """Offset vertical parabólico: arcada superior ∩ e inferior ∪."""
+            c = (len(nums) - 1) / 2
+            out = []
+            for i, num in enumerate(nums):
+                d = abs(i - c)
+                off = int((d ** 2) * 0.9) if forma == "sup" else int((c ** 2 - d ** 2) * 0.9)
+                out.append({"num": num, "off": off})
+            return out
+
         ctx.update({
             "paciente": self.paciente,
-            "diente_nums_superior": DIENTE_NUMS_SUPERIOR,
-            "diente_nums_inferior": DIENTE_NUMS_INFERIOR,
+            "dientes_superior": _arcada(DIENTE_NUMS_SUPERIOR, "sup"),
+            "dientes_inferior": _arcada(DIENTE_NUMS_INFERIOR, "inf"),
             "colores_paciente": colores,
             "historial_paciente": historial,
             "tipos_tratamiento": TIPO_TRATAMIENTO,
