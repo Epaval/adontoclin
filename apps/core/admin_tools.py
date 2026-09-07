@@ -89,7 +89,7 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
         desde = request.POST.get("desde") or None
         hasta = request.POST.get("hasta") or None
 
-        qs = Factura.objects.select_related("orden__expediente__paciente").order_by("numero_control")
+        qs = Factura.objects.select_related("cita__expediente__paciente").order_by("numero_control")
         if desde:
             qs = qs.filter(fecha_creacion__date__gte=desde)
         if hasta:
@@ -118,7 +118,7 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
                 f.numero_control,
                 f.numero,
                 f.fecha_creacion.strftime("%d/%m/%Y"),
-                str(f.orden.expediente.paciente),
+                str(f.cita.expediente.paciente),
                 f.get_estado_display(),
                 f.get_motivo_anulacion_display() or "-",
                 f.motivo_anulacion_otro or "-",
