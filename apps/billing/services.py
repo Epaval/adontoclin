@@ -85,41 +85,38 @@ from apps.core.models import DatosLaboratorio
 
 
 def generar_pdf_factura(factura):
-    """Genera el PDF de la factura con el encabezado del laboratorio"""
-    lab = DatosLaboratorio.cargar()
+    from django.template.loader import render_to_string
+    from xhtml2pdf import pisa
+    import io
 
-    from apps.core.models import TasaCambio
-
-    _t = TasaCambio.actual()
-    tasa = factura.tasa or (_t.valor if _t else Decimal("0"))
+    tasa = factura.tasa or Decimal("0")
     detalles = []
     for d in factura.detalles.select_related("servicio").all():
         detalles.append({
-            "examen": d.servicio, "cantidad": d.cantidad,
-            "precio_unitario": d.precio_unitario, "subtotal": d.subtotal,
-            "precio_bs": d.precio_unitario * tasa, "subtotal_bs": d.subtotal * tasa,
+            "servicio": d.servicio,
+            "diente": d.diente_fdi,
+            "cantidad": d.cantidad,
+            "precio_unitario": d.precio_unitario,
+            "precio_bs": (d.precio_unitario * tasa).quantize(Decimal("0.01")),
+            "subtotal": d.subtotal,
+            "subtotal_bs": (d.subtotal * tasa).quantize(Decimal("0.01")),
         })
+    context = {
+        "factura": factura,
+        "paciente": factura.cita.expediente.paciente,
+        "detalles": detalles,
+        "subtotal_bs": (factura.subtotal * tasa).quantize(Decimal("0.01")),
+        "descuento_bs": (factura.descuento * tasa).quantize(Decimal("0.01")),
+        "total_bs": (factura.total * tasa).quantize(Decimal("0.01")),
+    }
+    try:
+        from apps.core.models import DatosLaboratorio
+        context["datos"] = DatosLaboratorio.objects.first()
+    except Exception:
+        context["datos"] = None
+    html = render_to_string("reports/factura.html", context)
+    pdf = io.BytesIO()
+    pisa.CreatePDF(io.StringIO(html), dest=pdf)
+    return pdf.getvalue()
 
-    html = render_to_string(
-        "reports/factura.html",
-        {
-            "tasa": tasa,
-            "factura": factura,
-            "paciente": factura.cita.expediente.paciente,
-            "detalles": detalles,
-            "subtotal_bs": factura.subtotal * tasa,
-            "descuento_bs": factura.descuento * tasa,
-            "total_bs": factura.total * tasa,
-            "lab": lab,
-            "logo_path": lab.logo_pdf_path,
-            "fecha_generacion": timezone.now(),
-        },
-    )
 
-    buffer = io.BytesIO()
-    estado = pisa.CreatePDF(io.StringIO(html), dest=buffer, encoding="utf-8")
-
-    if estado.err:
-        raise ValueError("Error al generar el PDF de la factura")
-
-    return buffer.getvalue()

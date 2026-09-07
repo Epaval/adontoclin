@@ -1,135 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-  @page { size: letter; margin: 1.8cm; }
+  @page { size: letter; margin: 2cm; }
   body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #1e293b; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; vertical-align: top; }
-  th { background-color: #f1f5f9; font-size: 9px; text-transform: uppercase; }
-  .sin-borde, .sin-borde td { border: none; padding: 0; }
-  .lab-nombre { font-size: 20px; font-weight: bold; color: #0369a1; }
-  .lab-rif { font-size: 11px; font-weight: bold; margin-top: 2px; }
-  .lab-datos { font-size: 9px; color: #475569; margin-top: 1px; }
-  .lema { font-size: 9px; color: #64748b; font-style: italic; margin-top: 3px; }
-  .sub { color: #64748b; font-size: 9px; }
-  .factura-num { font-size: 14px; font-weight: bold; color: #0f172a; }
-  .datos td { background-color: #f8fafc; }
-  .derecha { text-align: right; }
-  .centro { text-align: center; }
-  .totales td { border: none; padding: 3px 7px; }
-  .total-final td { background-color: #f1f5f9; border: 1px solid #cbd5e1; font-size: 12px; font-weight: bold; }
-  .pie { margin-top: 24px; font-size: 8px; color: #94a3b8; }
+  .header { width: 100%; margin-bottom: 14px; }
+  .clinic { font-size: 20px; font-weight: bold; color: #0369a1; }
+  .clinic-sub { font-size: 9px; color: #475569; }
+  .fact-box { text-align: right; font-size: 10px; }
+  .fact-title { font-size: 14px; font-weight: bold; }
+  hr.grueso { border: 1px solid #1e293b; margin: 10px 0; }
+  table.datos { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  table.datos td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 10px; background: #f1f5f9; }
+  table.items { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  table.items th { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 9px; text-transform: uppercase; text-align: left; }
+  table.items td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 10px; }
+  .tot { width: 45%; margin-left: 55%; border-collapse: collapse; }
+  .tot td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 10px; }
+  .tot .grande { font-size: 13px; font-weight: bold; background: #e2e8f0; }
+  .footer { margin-top: 24px; font-size: 8px; color: #64748b; text-align: center; }
 </style>
 </head>
 <body>
+  <table class="header"><tr>
+    <td style="border:none;width:60%">
+      <div class="clinic">ODONTOCLIN</div>
+      <div class="clinic-sub">
+        RIF: {{ datos.rif|default:"J-00000000-0" }}<br>
+        {{ datos.direccion|default:"Av. Principal, Valencia Edo. Carabobo" }}<br>
+        Tlf: {{ datos.telefono|default:"0241-0000000" }} · {{ datos.email|default:"contacto@odontoclin.com" }}<br>
+        <em>"Sonríe con salud"</em>
+      </div>
+    </td>
+    <td style="border:none" class="fact-box">
+      <div class="fact-title">FACTURA</div>
+      <div><strong>N° {{ factura.numero }}</strong></div>
+      <div><strong>N° Control: {{ factura.numero_control }}</strong></div>
+      <div>Fecha: {{ factura.fecha_creacion|date:"d/m/Y H:i" }}</div>
+      <div>Estado: {{ factura.get_estado_display }}</div>
+    </td>
+  </tr></table>
 
-  <!-- Encabezado del laboratorio -->
-  <table class="sin-borde">
+  <hr class="grueso">
+
+  <table class="datos">
     <tr>
-      <td style="width:25%; vertical-align:top;">
-        {% if logo_path %}<img src="{{ logo_path }}" style="width:100px;" />{% endif %}
-      </td>
-      <td style="width:50%; text-align:center; vertical-align:top;">
-        <div class="lab-nombre">{{ lab.nombre }}</div>
-        {% if lab.rif %}<div class="lab-rif">RIF: {{ lab.rif }}</div>{% endif %}
-        {% if lab.direccion %}
-          <div class="lab-datos">{{ lab.direccion }}{% if lab.ciudad %} · {{ lab.ciudad }}{% endif %}</div>
-        {% endif %}
-        {% if lab.telefono or lab.email %}
-          <div class="lab-datos">
-            {% if lab.telefono %}Tlf: {{ lab.telefono }}{% endif %}
-            {% if lab.telefono and lab.email %} · {% endif %}
-            {% if lab.email %}{{ lab.email }}{% endif %}
-          </div>
-        {% endif %}
-        {% if lab.lema %}<div class="lema">"{{ lab.lema }}"</div>{% endif %}
-      </td>
-      <td style="width:25%; text-align:right; vertical-align:top;">
-        <div class="factura-num">FACTURA</div>
-        <div class="factura-num">N° {{ factura.numero }}</div>
-        {% if factura.numero_control %}
-        <div style="margin-top:3px; font-size:11px; font-weight:bold; color:#334155; letter-spacing:1px;">
-          N° Control: {{ factura.numero_control }}
-        </div>
-        {% endif %}
-        <div class="sub" style="margin-top:4px;">
-          Fecha: {{ factura.fecha_creacion|date:"d/m/Y H:i" }}<br>
-          Estado: {{ factura.get_estado_display }}
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  <hr>
-
-  <!-- Datos del paciente -->
-  <table>
-    <tr class="datos">
       <td><strong>Paciente:</strong> {{ paciente.full_name }}</td>
-      <td><strong>CI:</strong> {{ paciente.ci_efectivo|default:"-" }}{% if paciente.es_menor and paciente.representante %}<br>Representante: {{ paciente.representante.full_name }} · CI: {{ paciente.representante.ci|default:"-" }} · Tel: {{ paciente.representante.telefono|default:"-" }}{% endif %}</td>
+      <td><strong>CI:</strong> {{ paciente.ci_efectivo|default:"-" }}</td>
     </tr>
-    <tr class="datos">
-      <td><strong>Orden:</strong> #{{ factura.expediente.pk }}</td>
+    <tr>
+      <td><strong>Cita:</strong> #{{ factura.cita.pk }} · {{ factura.cita.fecha|date:"d/m/Y" }}</td>
       <td><strong>Método de pago:</strong> {{ factura.get_metodo_pago_display|default:"Por definir" }}</td>
     </tr>
+    {% if paciente.es_menor and paciente.representante %}
+    <tr>
+      <td colspan="2"><strong>Representante:</strong> {{ paciente.representante.full_name }} · CI {{ paciente.representante.ci|default:"-" }} · Tel {{ paciente.representante.telefono|default:"-" }}</td>
+    </tr>
+    {% endif %}
   </table>
 
-  <!-- Detalle de exámenes con precios -->
-  <table style="margin-top:14px;">
-    <tr>
-      <th style="width:44%;">Examen</th>
-      <th style="width:22%;">Perfil</th>
-      <th style="width:8%;" class="centro">Cant.</th>
-      <th style="width:13%;" class="derecha">P. Unitario</th>
-      <th style="width:13%;" class="derecha">Subtotal</th>
-    </tr>
-    {% for d in detalles %}
+  <table class="items">
+    <thead>
+      <tr><th style="width:44%">Servicio</th><th style="width:12%">Diente</th><th style="width:10%">Cant.</th><th style="width:17%">P. Unitario</th><th style="width:17%">Subtotal</th></tr>
+    </thead>
+    <tbody>
+      {% for d in detalles %}
       <tr>
         <td>{{ d.servicio.nombre }}</td>
-        <td>{{ d.diente_fdi|default:"-" }}</td>
-        <td class="centro">{{ d.cantidad }}</td>
-        <td class="derecha">Bs {{ d.precio_bs|floatformat:2 }} <span class="sub">($ {{ d.precio_unitario|floatformat:2 }})</span></td>
-        <td class="derecha">Bs {{ d.subtotal_bs|floatformat:2 }}</td>
+        <td>{{ d.diente|default:"—" }}</td>
+        <td>{{ d.cantidad }}</td>
+        <td>Bs {{ d.precio_bs }} ($ {{ d.precio_unitario }})</td>
+        <td>Bs {{ d.subtotal_bs }}</td>
       </tr>
-    {% endfor %}
+      {% endfor %}
+    </tbody>
   </table>
 
-  <!-- Totales -->
-  <table style="margin-top:10px;">
+  <table class="tot">
+    <tr><td style="text-align:right"><strong>Subtotal:</strong></td><td style="text-align:right">Bs {{ subtotal_bs }}</td></tr>
+    {% if factura.descuento %}<tr><td style="text-align:right"><strong>Descuento:</strong></td><td style="text-align:right">Bs {{ descuento_bs }}</td></tr>{% endif %}
     <tr>
-      <td style="border:none; width:70%;"></td>
-      <td style="border:none; width:30%;">
-        <table style="width:100%;">
-          <tr class="totales">
-            <td class="derecha"><strong>Subtotal:</strong></td>
-            <td class="derecha">Bs {{ subtotal_bs|floatformat:2 }}</td>
-          </tr>
-          {% if factura.descuento %}
-            <tr class="totales">
-              <td class="derecha"><strong>Descuento:</strong></td>
-              <td class="derecha">- Bs {{ descuento_bs|floatformat:2 }}</td>
-            </tr>
-          {% endif %}
-          <tr class="total-final">
-            <td class="derecha">TOTAL:</td>
-            <td class="derecha">Bs {{ total_bs|floatformat:2 }}<br><span class="sub">($ {{ factura.total|floatformat:2 }} · Tasa: {{ tasa|floatformat:2 }} Bs/$)</span></td>
-          </tr>
-        </table>
-      </td>
+      <td class="grande" style="text-align:right">TOTAL:</td>
+      <td class="grande" style="text-align:right">Bs {{ total_bs }}<br><span style="font-size:9px;font-weight:normal">($ {{ factura.total }} · Tasa: {{ factura.tasa }} Bs/$)</span></td>
     </tr>
   </table>
 
-  {% if factura.observaciones %}
-    <p style="margin-top:14px; font-size:9px; color:#475569;">
-      <strong>Observaciones:</strong> {{ factura.observaciones }}
-    </p>
-  {% endif %}
-
-  <p class="pie">
-    Gracias por su preferencia. Este documento fue generado electrónicamente por {{ lab.nombre }}.
-    {% if lab.rif %}RIF: {{ lab.rif }}.{% endif %}
-  </p>
+  <div class="footer">Gracias por su preferencia. Este documento fue generado electrónicamente por ODONTOCLIN.</div>
 </body>
 </html>
