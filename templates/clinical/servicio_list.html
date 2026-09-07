@@ -7,10 +7,11 @@
         <h1 class="text-xl font-bold text-slate-900">🦷 Servicios dentales</h1>
         <p class="text-sm text-slate-500 mt-0.5">Catálogo con precios en $ (se facturan en Bs con la tasa del día)</p>
       </div>
+      <a href="{% url 'clinical:servicio_create' %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">+ Nuevo servicio</a>
     </div>
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
-        <tr><th class="px-4 py-3 text-left">Código</th><th class="px-4 py-3 text-left">Servicio</th><th class="px-4 py-3 text-right">Precio $</th><th class="px-4 py-3 text-center">Estado</th></tr>
+        <tr><th class="px-4 py-3 text-left">Código</th><th class="px-4 py-3 text-left">Servicio</th><th class="px-4 py-3 text-right">Precio $</th><th class="px-4 py-3 text-center">Estado</th><th class="px-4 py-3 text-right">Acciones</th></tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
         {% for s in servicios %}
@@ -19,9 +20,10 @@
           <td class="px-4 py-3 font-medium text-slate-900">{{ s.nombre }}<div class="text-xs text-slate-500">{{ s.descripcion }}</div></td>
           <td class="px-4 py-3 text-right font-semibold">${{ s.precio_usd }}</td>
           <td class="px-4 py-3 text-center">{% if s.activo %}<span class="text-emerald-600">● Activo</span>{% else %}<span class="text-slate-400">● Inactivo</span>{% endif %}</td>
+          <td class="px-4 py-3 text-right"><a href="{% url 'clinical:servicio_update' s.pk %}" class="text-sky-600 font-semibold text-xs">✏️ Editar</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">Sin servicios registrados.</td></tr>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Sin servicios registrados.</td></tr>
         {% endfor %}
       </tbody>
     </table>

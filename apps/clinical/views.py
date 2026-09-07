@@ -308,3 +308,19 @@ class RecetaUpdateView(LoginRequiredMixin, TemplateView):
         formset.save()
         messages.success(request, f"Receta #{self.receta.pk} actualizada.")
         return redirect("patients:historial", pk=self.receta.cita.expediente.paciente.pk)
+
+
+class ServicioDentalCreateView(LoginRequiredMixin, CreateView):
+    model = ServicioDental
+    fields = ["codigo", "nombre", "descripcion", "precio_usd", "activo"]
+    template_name = "form.html"
+    success_url = reverse_lazy("clinical:servicio_list")
+    extra_context = {"title": "Nuevo servicio dental"}
+
+
+class ServicioDentalUpdateView(LoginRequiredMixin, UpdateView):
+    model = ServicioDental
+    fields = ["codigo", "nombre", "descripcion", "precio_usd", "activo"]
+    template_name = "form.html"
+    success_url = reverse_lazy("clinical:servicio_list")
+    extra_context = {"title": "Editar servicio dental"}

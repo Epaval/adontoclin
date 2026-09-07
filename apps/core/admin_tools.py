@@ -28,14 +28,30 @@ class LicenciaView(SoloSuperUser, TemplateView):
     template_name = "core/licencia_panel.html"
 
     def get_context_data(self, **kwargs):
+        from apps.core import licencias as L
+
+        def _call(nombre, default):
+            fn = getattr(L, nombre, None)
+            if fn is None:
+                return default
+            try:
+                v = fn()
+                return v if v not in (None, "") else default
+            except Exception:
+                return default
+
         ctx = super().get_context_data(**kwargs)
-        from apps.core import licencias
         ctx.update({
-            "estado": licencias.estado_licencia(),
-            "dias": licencias.dias_restantes(),
-            "huella": licencias.huella_maquina(),
+            "estado": _call("estado_licencia", "SIN CLAVE · modo prueba"),
+            "tipo": _call("tipo_licencia", "Prueba"),
+            "dias": _call("dias_restantes", "—"),
+            "vencimiento": _call("fecha_vencimiento", "—"),
+            "huella": _call("huella_maquina", "—"),
+            "clave": _call("clave_activada", "— (sin clave: modo prueba)"),
+            "modo_dev": _call("modo_dev", False),
         })
         return ctx
+
 
 
 class EstadisticasView(SoloSuperUser, TemplateView):

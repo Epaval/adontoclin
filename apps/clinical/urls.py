@@ -5,6 +5,8 @@ from . import views
 app_name = "clinical"
 urlpatterns = [
     path("servicios/", views.ServicioDentalListView.as_view(), name="servicio_list"),
+    path("servicios/nuevo/", views.ServicioDentalCreateView.as_view(), name="servicio_create"),
+    path("servicios/<int:pk>/editar/", views.ServicioDentalUpdateView.as_view(), name="servicio_update"),
     path("expedientes/", views.ExpedienteDentalListView.as_view(), name="expediente_list"),
     path("expedientes/nueva/<int:paciente_id>/", views.ExpedienteDentalCreateView.as_view(), name="expediente_create"),
     path("expedientes/<int:pk>/editar/", views.ExpedienteDentalUpdateView.as_view(), name="expediente_update"),
