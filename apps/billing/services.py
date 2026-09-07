@@ -105,7 +105,7 @@ def generar_pdf_factura(factura):
         {
             "tasa": tasa,
             "factura": factura,
-            "paciente": factura.expediente.paciente,
+            "paciente": factura.cita.expediente.paciente,
             "detalles": detalles,
             "subtotal_bs": factura.subtotal * tasa,
             "descuento_bs": factura.descuento * tasa,
