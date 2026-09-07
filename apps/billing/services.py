@@ -93,9 +93,9 @@ def generar_pdf_factura(factura):
     _t = TasaCambio.actual()
     tasa = factura.tasa or (_t.valor if _t else Decimal("0"))
     detalles = []
-    for d in factura.detalles.select_related("examen").all():
+    for d in factura.detalles.select_related("servicio").all():
         detalles.append({
-            "examen": d.examen, "cantidad": d.cantidad,
+            "examen": d.servicio, "cantidad": d.cantidad,
             "precio_unitario": d.precio_unitario, "subtotal": d.subtotal,
             "precio_bs": d.precio_unitario * tasa, "subtotal_bs": d.subtotal * tasa,
         })

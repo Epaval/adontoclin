@@ -46,7 +46,7 @@ class FacturaDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["detalles"] = self.object.detalles.select_related("examen")
+        context["detalles"] = self.object.detalles.select_related("servicio")
         context["metodos_pago"] = Factura.METODO_PAGO
         return context
 

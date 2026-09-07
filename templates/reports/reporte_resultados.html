@@ -85,7 +85,7 @@
         </tr>
         {% for r in grupo.resultados %}
           <tr>
-            <td>{{ r.examen.nombre_completo }}</td>
+            <td>{{ r.servicio.nombre }}</td>
             <td>
               {% if r.tiene_resultado %}
                 <strong>{{ r.resultado_texto }}</strong>
