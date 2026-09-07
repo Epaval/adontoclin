@@ -223,12 +223,12 @@ body[data-theme="azul"] .text-slate-900,body[data-theme="verde"] .text-slate-900
   
     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
       <p class="text-xs font-semibold text-slate-500 mb-2">🎨 Tema de color</p>
-      <form method="post" action="{% url 'cambiar_tema' %}" class="flex gap-2">
+      <form method="post" action="{% url 'cambiar_tema' %}" style="display:flex;gap:8px">
         {% csrf_token %}
-        <button name="tema" value="dark" title="Oscuro" class="w-7 h-7 rounded-full bg-slate-800 border-2 {% if tema == 'dark' %}border-sky-400{% else %}border-transparent{% endif %}"></button>
-        <button name="tema" value="azul" title="Azul" class="w-7 h-7 rounded-full bg-gradient-to-br from-sky-700 to-sky-400 border-2 {% if tema == 'azul' %}border-sky-400{% else %}border-transparent{% endif %}"></button>
-        <button name="tema" value="verde" title="Verde" class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-400 border-2 {% if tema == 'verde' %}border-emerald-400{% else %}border-transparent{% endif %}"></button>
-        <button name="tema" value="rosa" title="Rosado" class="w-7 h-7 rounded-full bg-gradient-to-br from-pink-700 to-pink-400 border-2 {% if tema == 'rosa' %}border-pink-400{% else %}border-transparent{% endif %}"></button>
+        <button type="submit" name="tema" value="dark" title="Oscuro" style="width:26px;height:26px;border-radius:50%;background:#1e293b;border:2px solid {% if tema == 'dark' %}#38bdf8{% else %}transparent{% endif %};cursor:pointer"></button>
+        <button type="submit" name="tema" value="azul" title="Azul degradado" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#0c4a6e,#38bdf8);border:2px solid {% if tema == 'azul' %}#38bdf8{% else %}transparent{% endif %};cursor:pointer"></button>
+        <button type="submit" name="tema" value="verde" title="Verde degradado" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#064e3b,#34d399);border:2px solid {% if tema == 'verde' %}#34d399{% else %}transparent{% endif %};cursor:pointer"></button>
+        <button type="submit" name="tema" value="rosa" title="Rosado degradado" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#831843,#f9a8d4);border:2px solid {% if tema == 'rosa' %}#f9a8d4{% else %}transparent{% endif %};cursor:pointer"></button>
       </form>
     </div>
   </aside>
