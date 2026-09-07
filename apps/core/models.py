@@ -11,17 +11,20 @@ def validar_logo(value):
         raise ValidationError("Formato permitido: PNG, JPG, SVG o WebP")
 
 
-def _convertir_webp(fieldfile):
-    """Convierte WebP a PNG para compatibilidad con PDFs."""
+def _normalizar_imagen(fieldfile):
+    """Acepta cualquier formato que PIL abra (webp, png, jpg...) y lo convierte a PNG.
+    SVG se deja intacto."""
     if not fieldfile:
         return fieldfile
     try:
-        from PIL import Image
         import os
-        if fieldfile.name.lower().endswith(".webp"):
-            img = Image.open(fieldfile.path).convert("RGBA")
+        from PIL import Image
+        if str(fieldfile.name).lower().endswith(".svg"):
+            return fieldfile
+        img = Image.open(fieldfile.path)
+        if (img.format or "").upper() not in ("PNG", "JPEG"):
             nuevo = fieldfile.path.rsplit(".", 1)[0] + ".png"
-            img.save(nuevo, "PNG")
+            img.convert("RGBA").save(nuevo, "PNG")
             os.remove(fieldfile.path)
             fieldfile.name = os.path.basename(nuevo)
     except Exception:
@@ -45,7 +48,6 @@ class DatosLaboratorio(models.Model):
         upload_to="logo/",
         null=True,
         blank=True,
-        validators=[validar_logo],
         help_text="Se muestra en el encabezado de reportes y facturas en PDF",
     )
     bioanalista_nombre = models.CharField(
