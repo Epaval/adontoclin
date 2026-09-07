@@ -23,7 +23,6 @@ urlpatterns = [
     path("tasa/", TasaCambioView.as_view(), name="tasa_cambio"),
     path("accounts/", include("apps.accounts.urls")),
     path("pacientes/", include("apps.patients.urls")),
-    path("medicos/", include("apps.doctors.urls")),
     path("facturas/", include("apps.billing.urls")),
 ]
 
