@@ -373,11 +373,17 @@ class AgendaView(LoginRequiredMixin, TemplateView):
         ny = y if m < 12 else y + 1
         ctx.update({
             "semanas": semanas, "por_dia": por_dia,
-            "mes_nombre": date(y, m, 1).strftime("%B %Y").title(),
+            "mes_nombre": f"{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m-1]} {y}",
             "mes_actual": f"{y}-{m:02d}",
             "mes_prev": f"{py}-{pm:02d}", "mes_next": f"{ny}-{nm:02d}",
             "hoy": hoy,
             "ahora": datetime.now(),
+            "resumen": {
+                "total": citas.count(),
+                "programadas": citas.filter(estado="programada").count(),
+                "atendidas": citas.filter(estado="atendida").count(),
+                "ausentes": citas.filter(estado="ausente").count(),
+            },
         })
         return ctx
 

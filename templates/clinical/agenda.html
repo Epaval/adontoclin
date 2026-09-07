@@ -1,46 +1,90 @@
 {% extends "base.html" %}
 {% load odonto_tags %}
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-4 pb-10">
-  <div class="flex items-center justify-between flex-wrap gap-3">
+<style>
+.ag-wrap{max-width:1200px;margin:0 auto;padding-bottom:40px}
+.ag-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.ag-title{font-size:22px;font-weight:800;color:#f1f5f9}
+.ag-sub{font-size:12px;color:#64748b;margin-top:2px}
+.ag-nav{display:flex;gap:8px}
+.ag-btn{padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;background:#1e293b;color:#cbd5e1;border:1px solid #334155}
+.ag-btn:hover{background:#334155}
+.ag-btn-hoy{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.ag-btn-hoy:hover{background:#0284c7}
+.ag-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ag-stat{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;background:#1e293b;border:1px solid #334155;color:#94a3b8}
+.ag-stat b{color:#f1f5f9}
+.ag-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid #1e293b;border-radius:16px;overflow:hidden;background:#0f172a;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.ag-dow{padding:10px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#64748b;background:#111c2e;border-bottom:1px solid #1e293b}
+.ag-celda{min-height:112px;padding:6px;border-right:1px solid #16202f;border-bottom:1px solid #16202f;position:relative;background:#0d1626}
+.ag-celda:nth-child(7n){border-right:none}
+.ag-celda.vacia{background:#0a111d}
+.ag-celda:hover{background:#12203a}
+.ag-dia{font-size:12px;font-weight:700;color:#64748b}
+.ag-hoy .ag-dia{background:#0ea5e9;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.ag-mas{position:absolute;top:5px;right:6px;width:22px;height:22px;border-radius:8px;background:#1e293b;color:#38bdf8;font-weight:800;font-size:14px;line-height:20px;text-align:center;opacity:0;transition:opacity .15s}
+.ag-celda:hover .ag-mas{opacity:1}
+.ag-mas:hover{background:#0ea5e9;color:#fff}
+.ag-chip{display:block;margin-top:4px;padding:3px 6px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid}
+.ag-chip.prog{background:rgba(14,165,233,.15);color:#7dd3fc;border-color:#0ea5e9}
+.ag-chip.aten{background:rgba(16,185,129,.15);color:#6ee7b7;border-color:#10b981}
+.ag-chip.aus{background:rgba(245,158,11,.15);color:#fcd34d;border-color:#f59e0b}
+.ag-chip.canc{background:rgba(220,38,38,.15);color:#fca5a5;border-color:#dc2626}
+.ag-leyenda{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.ag-leyenda span{font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:6px}
+.ag-leyenda i{width:10px;height:10px;border-radius:3px;display:inline-block}
+</style>
+
+<div class="ag-wrap">
+  <div class="ag-head">
     <div>
-      <h1 class="text-xl font-bold text-slate-900">📅 Agenda · {{ mes_nombre }}</h1>
-      <p class="text-xs text-slate-500 mt-1">🕐 Fecha del servidor (este equipo, sin internet): <strong>{{ ahora|date:"d/m/Y H:i" }}</strong></p>
+      <div class="ag-title">📅 Agenda · {{ mes_nombre }}</div>
+      <div class="ag-sub">🕐 Fecha del servidor (este equipo, sin internet): <strong>{{ ahora|date:"d/m/Y H:i" }}</strong></div>
     </div>
-    <div class="flex gap-2">
-      <a href="?mes={{ mes_prev }}" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">← Anterior</a>
-      <a href="?" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold">Hoy</a>
-      <a href="?mes={{ mes_next }}" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">Siguiente →</a>
+    <div class="ag-nav">
+      <a class="ag-btn" href="?mes={{ mes_prev }}">← Anterior</a>
+      <a class="ag-btn ag-btn-hoy" href="?">Hoy</a>
+      <a class="ag-btn" href="?mes={{ mes_next }}">Siguiente →</a>
     </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-    <div class="grid grid-cols-7 bg-slate-100 text-xs font-bold uppercase text-slate-500">
-      <div class="p-2 text-center">Lun</div><div class="p-2 text-center">Mar</div><div class="p-2 text-center">Mié</div>
-      <div class="p-2 text-center">Jue</div><div class="p-2 text-center">Vie</div><div class="p-2 text-center">Sáb</div><div class="p-2 text-center">Dom</div>
-    </div>
+  <div class="ag-stats">
+    <span class="ag-stat">Citas del mes: <b>{{ resumen.total }}</b></span>
+    <span class="ag-stat" style="border-color:#0ea5e9">Programadas: <b style="color:#7dd3fc">{{ resumen.programadas }}</b></span>
+    <span class="ag-stat" style="border-color:#10b981">Atendidas: <b style="color:#6ee7b7">{{ resumen.atendidas }}</b></span>
+    <span class="ag-stat" style="border-color:#f59e0b">Ausentes: <b style="color:#fcd34d">{{ resumen.ausentes }}</b></span>
+  </div>
+
+  <div class="ag-grid">
+    <div class="ag-dow">Lun</div><div class="ag-dow">Mar</div><div class="ag-dow">Mié</div>
+    <div class="ag-dow">Jue</div><div class="ag-dow">Vie</div><div class="ag-dow">Sáb</div><div class="ag-dow">Dom</div>
     {% for semana in semanas %}
-    <div class="grid grid-cols-7 border-t border-slate-100">
       {% for dia in semana %}
-      <div class="min-h-24 p-1.5 border-r border-slate-100 last:border-r-0 {% if not dia %}bg-slate-50{% endif %}">
         {% if dia %}
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-xs font-bold {% if hoy.day == dia %}text-sky-500 text-base{% else %}text-slate-500{% endif %}">{{ dia }}</span>
-          <a href="{% url 'clinical:cita_nueva' %}?fecha={{ mes_actual }}-{{ dia|stringformat:'02d' }}T09:00" class="text-sky-500 hover:text-sky-600 text-sm font-bold" title="Nueva cita">+</a>
+        <div class="ag-celda {% if hoy.day == dia %}ag-hoy{% endif %}">
+          <div class="ag-dia">{{ dia }}</div>
+          <a class="ag-mas" title="Nueva cita" href="{% url 'clinical:cita_nueva' %}?fecha={{ mes_actual }}-{{ dia|stringformat:'02d' }}T09:00">+</a>
+          {% for c in por_dia|get_item:dia %}
+          <a class="ag-chip {% if c.estado == 'atendida' %}aten{% elif c.estado == 'programada' %}prog{% elif c.estado == 'ausente' %}aus{% else %}canc{% endif %}"
+             href="{% url 'patients:historial' c.expediente.paciente.pk %}"
+             title="{{ c.fecha|date:'H:i' }} · {{ c.expediente.paciente.full_name }} · {{ c.get_estado_display }}">
+            {{ c.fecha|date:"H:i" }} {{ c.expediente.paciente.full_name }}
+          </a>
+          {% endfor %}
         </div>
-        {% for c in por_dia|get_item:dia %}
-        <a href="{% url 'patients:historial' c.expediente.paciente.pk %}" class="block mb-1 px-1.5 py-1 rounded text-[10px] font-semibold truncate
-          {% if c.estado == 'atendida' %}bg-emerald-100 text-emerald-700{% elif c.estado == 'programada' %}bg-sky-100 text-sky-700{% elif c.estado == 'ausente' %}bg-amber-100 text-amber-700{% else %}bg-red-100 text-red-700{% endif %}"
-          title="{{ c.fecha|date:'H:i' }} · {{ c.expediente.paciente.full_name }}">
-          {{ c.fecha|date:"H:i" }} {{ c.expediente.paciente.full_name }}
-        </a>
-        {% endfor %}
+        {% else %}
+        <div class="ag-celda vacia"></div>
         {% endif %}
-      </div>
       {% endfor %}
-    </div>
     {% endfor %}
   </div>
-  <p class="text-xs text-slate-500">Clic en "+" del día para agendar · clic en una cita para ir al historial del paciente.</p>
+
+  <div class="ag-leyenda">
+    <span><i style="background:#0ea5e9"></i>Programada</span>
+    <span><i style="background:#10b981"></i>Atendida</span>
+    <span><i style="background:#f59e0b"></i>Ausente</span>
+    <span><i style="background:#dc2626"></i>Cancelada</span>
+    <span style="color:#64748b">Pasa el mouse por un día para ver el "+" · clic en una cita abre el historial</span>
+  </div>
 </div>
 {% endblock %}
