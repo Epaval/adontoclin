@@ -1,11 +1,11 @@
 [Setup]
 AppName=OdontoClin
-AppVersion=0.1.0
+AppVersion=0.2.4
 AppPublisher=OdontoClin Software
 DefaultDirName={autopf}\OdontoClin
 DefaultGroupName=OdontoClin
 OutputDir=instalador
-OutputBaseFilename=OdontoClin-Setup-0.1.0
+OutputBaseFilename=OdontoClin-Setup-0.2.4
 Compression=lzma2/ultra64
 SolidCompression=yes
 PrivilegesRequired=lowest
