@@ -9,6 +9,7 @@ from . import views as error_views
 from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, LicenciaView
 
 urlpatterns = [
+    path('tema/', __import__('apps.core.views_tasa', fromlist=['cambiar_tema']).cambiar_tema, name='cambiar_tema'),
     path("clinical/", include("apps.clinical.urls")),
     path("admin/", admin.site.urls),
     path("", DashboardView.as_view(), name="dashboard"),

@@ -1,5 +1,5 @@
 """
-Lanzador de Lab Clínico - Modo Escritorio
+Lanzador de OdontoClin - Modo Escritorio
 """
 import argparse
 import os
@@ -31,7 +31,7 @@ EXE_DIR = exe_dir()
 if FROZEN:
     DATA_BASE = os.environ.get(
         "LABCLIN_DATA",
-        os.path.join(os.path.expanduser("~"), "LabClinico"),
+        os.path.join(os.path.expanduser("~"), "OdontoClin"),
     )
 else:
     DATA_BASE = EXE_DIR
@@ -55,9 +55,9 @@ def reportar_error(exc_texto):
         import ctypes
         ctypes.windll.user32.MessageBoxW(
             0,
-            f"Error al iniciar Lab Clínico:\n\n{exc_texto[:800]}\n\n"
+            f"Error al iniciar OdontoClin:\n\n{exc_texto[:800]}\n\n"
             f"Detalle completo en:\n{ERROR_LOG}",
-            "Lab Clínico - Error",
+            "OdontoClin - Error",
             0x10,
         )
     except Exception:
@@ -72,7 +72,7 @@ def pedir_ip_servidor(ip_actual=""):
     resultado = {"ip": None}
 
     root = tk.Tk()
-    root.title("Lab Clínico - Conectar al servidor")
+    root.title("OdontoClin - Conectar al servidor")
     root.geometry("460x320")
     root.resizable(False, False)
     root.configure(bg="#f8fafc")
@@ -88,7 +88,7 @@ def pedir_ip_servidor(ip_actual=""):
 
     # Título
     titulo = tk.Label(
-        frame, text="Lab Clínico",
+        frame, text="OdontoClin",
         font=("Segoe UI", 20, "bold"),
         bg="#f8fafc", fg="#0f172a",
     )
@@ -216,7 +216,7 @@ def detectar_otro_servidor(puerto):
         try:
             req = urllib.request.urlopen(f"http://{ip}:{puerto}/", timeout=0.5)
             html = req.read(4000).decode("utf-8", "ignore")
-            if "Lab Clínico" in html or "configuracion-inicial" in html or "accounts/login" in html:
+            if "OdontoClin" in html or "configuracion-inicial" in html or "accounts/login" in html:
                 return ip
         except Exception:
             pass
@@ -262,7 +262,7 @@ def abrir_ventana(url, mantener_vivo=False):
     try:
         import webview
         webview.create_window(
-            "Lab Clínico", url,
+            "OdontoClin", url,
             width=1360, height=860, min_size=(1024, 700),
         )
         webview.start()
@@ -282,7 +282,7 @@ def main():
     else:
         sys.path.insert(0, EXE_DIR)
 
-    parser = argparse.ArgumentParser(description="Lab Clínico - Modo Escritorio")
+    parser = argparse.ArgumentParser(description="OdontoClin - Modo Escritorio")
     parser.add_argument("--lan", action="store_true")
     parser.add_argument("--puerto", type=int, default=8000)
     parser.add_argument("--sin-ventana", action="store_true")
@@ -429,7 +429,7 @@ def main():
         except Exception:
             ip = "TU_IP"
         print("=" * 60)
-        print("  Lab Clínico disponible en la red local:")
+        print("  OdontoClin disponible en la red local:")
         print(f"  → Esta PC:   {url}")
         print(f"  → Otras PCs: http://{ip}:{args.puerto}")
         print("=" * 60)
@@ -443,7 +443,7 @@ def main():
             from tkinter import messagebox
             
             ventana = tk.Tk()
-            ventana.title("Lab Clínico - Servidor Activo")
+            ventana.title("OdontoClin - Servidor Activo")
             ventana.geometry("480x280")
             ventana.resizable(False, False)
             ventana.configure(bg="#f8fafc")
@@ -458,7 +458,7 @@ def main():
             frame.pack(fill="both", expand=True)
             
             tk.Label(
-                frame, text="Lab Clínico",
+                frame, text="OdontoClin",
                 font=("Segoe UI", 20, "bold"),
                 bg="#f8fafc", fg="#0f172a",
             ).pack(pady=(0, 5))

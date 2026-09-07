@@ -42,6 +42,13 @@ class DatosLaboratorio(models.Model):
     email = models.EmailField(blank=True)
     ciudad = models.CharField(max_length=80, blank=True)
     lema = models.CharField(max_length=120, blank=True)
+    TEMA = [
+        ("dark", "Oscuro (actual)"),
+        ("azul", "Azul degradado"),
+        ("verde", "Verde degradado"),
+        ("rosa", "Rosado degradado"),
+    ]
+    tema = models.CharField("Tema de color", max_length=10, choices=TEMA, default="dark")
     simbolo_moneda = models.CharField(max_length=5, default="Bs.")
     logo = models.FileField(
         "Logo de la clínica (PNG, JPG, SVG o WebP)",

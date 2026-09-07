@@ -108,6 +108,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.core.context_processors.tema_clinica",
                 "apps.core.context_processors.tasa_actual",
             ],
         },
