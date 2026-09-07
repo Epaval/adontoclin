@@ -2,10 +2,12 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from apps.patients.models import Paciente
 
+from .forms import CitaItemForm
 from .models import (
     COLOR_DIENTE,
     DIENTE_NUMS_INFERIOR,
@@ -14,6 +16,7 @@ from .models import (
     CitaDental,
     ExpedienteDental,
     HistorialDiente,
+    CitaItem,
     ServicioDental,
 )
 
@@ -158,3 +161,35 @@ class OdontogramaView(LoginRequiredMixin, TemplateView):
             "colores_leyenda": [(l, COLOR_DIENTE[v]) for v, l in TIPO_TRATAMIENTO if v != "otro"],
         })
         return ctx
+
+
+class CitaItemCreateView(LoginRequiredMixin, CreateView):
+    model = CitaItem
+    form_class = CitaItemForm
+    template_name = "form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.cita = get_object_or_404(CitaDental, pk=self.kwargs["cita_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.cita = self.cita
+        messages.success(self.request, "Servicio agregado a la cita.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("patients:historial", kwargs={"pk": self.cita.expediente.paciente.pk})
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["title"] = f"Agregar servicio · Cita #{self.cita.pk} · {self.cita.expediente.paciente.full_name}"
+        return ctx
+
+
+class CitaItemDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        item = get_object_or_404(CitaItem, pk=pk)
+        paciente_pk = item.cita.expediente.paciente.pk
+        item.delete()
+        messages.success(request, "Servicio quitado de la cita.")
+        return redirect("patients:historial", pk=paciente_pk)

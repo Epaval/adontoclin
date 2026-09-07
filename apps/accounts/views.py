@@ -51,7 +51,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "total_examenes": ServicioDental.objects.filter(activo=True).count(),
             "total_resultados": ExpedienteDental.objects.count(),
             "pacientes_del_dia": Paciente.objects.filter(
-                expedientes_dentales__fecha_creacion__date=hoy
+                expediente_dental__citas__fecha__date=hoy
             ).distinct().count(),
             "ordenes_abiertas": CitaDental.objects.filter(
                 estado__in=["abierta", "en_proceso"]

@@ -10,5 +10,7 @@ urlpatterns = [
     path("expedientes/<int:pk>/editar/", views.ExpedienteDentalUpdateView.as_view(), name="expediente_update"),
     path("citas/nueva/<int:paciente_id>/", views.CitaDentalCreateView.as_view(), name="cita_create"),
     path("citas/<int:pk>/editar/", views.CitaDentalUpdateView.as_view(), name="cita_update"),
+    path("citas/<int:cita_pk>/servicios/nuevo/", views.CitaItemCreateView.as_view(), name="cita_item_create"),
+    path("servicios-item/<int:pk>/eliminar/", views.CitaItemDeleteView.as_view(), name="cita_item_delete"),
     path("odontograma/<int:paciente_id>/", views.OdontogramaView.as_view(), name="odontograma"),
 ]

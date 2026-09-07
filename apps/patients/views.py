@@ -53,6 +53,11 @@ class PacienteUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
     success_url = reverse_lazy("patients:list")
     extra_context = {"title": "Editar paciente", "es_paciente": True}
 
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        form.fields["fecha_nac"].disabled = True
+        return form
+
 
 class PacienteHistorialView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = Paciente

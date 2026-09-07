@@ -63,7 +63,7 @@ class FacturaCreateView(LoginRequiredMixin, PermissionRequiredMixin, View):
             return redirect("billing:detail", pk=factura.pk)
         except ValueError as exc:
             messages.error(request, str(exc))
-            return redirect("clinical:expediente_list")
+            return redirect("patients:historial", pk=cita.expediente.paciente.pk)
 
 
 class FacturaPagarView(LoginRequiredMixin, PermissionRequiredMixin, View):
