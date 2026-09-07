@@ -17,6 +17,8 @@ from .models import (
     ExpedienteDental,
     HistorialDiente,
     CitaItem,
+    Receta,
+    RecetaMedicamento,
     ServicioDental,
 )
 
@@ -193,3 +195,89 @@ class CitaItemDeleteView(LoginRequiredMixin, View):
         item.delete()
         messages.success(request, "Servicio quitado de la cita.")
         return redirect("patients:historial", pk=paciente_pk)
+
+
+from django.forms import inlineformset_factory
+from django.http import HttpResponse
+
+RecetaMedFormSet = inlineformset_factory(
+    Receta, RecetaMedicamento,
+    fields=["nombre", "dosis", "frecuencia", "duracion", "indicacion"],
+    extra=3, can_delete=True,
+)
+
+
+class RecetaCreateView(LoginRequiredMixin, TemplateView):
+    template_name = "clinical/receta_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.cita = get_object_or_404(CitaDental, pk=self.kwargs["cita_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.setdefault("formset", RecetaMedFormSet())
+        ctx["cita"] = self.cita
+        ctx["paciente"] = self.cita.expediente.paciente
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        formset = RecetaMedFormSet(request.POST)
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(formset=formset))
+        receta = Receta.objects.create(
+            cita=self.cita,
+            diagnostico=request.POST.get("diagnostico", "").strip(),
+            indicaciones_generales=request.POST.get("indicaciones_generales", "").strip(),
+            creada_por=request.user,
+        )
+        formset.instance = receta
+        formset.save()
+        messages.success(request, f"Receta #{receta.pk} creada.")
+        return redirect("patients:historial", pk=self.cita.expediente.paciente.pk)
+
+
+class RecetaPDFView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        import base64
+        import io
+        import os
+
+        from django.template.loader import render_to_string
+        from xhtml2pdf import pisa
+
+        from apps.core.models import DatosLaboratorio
+
+        receta = get_object_or_404(
+            Receta.objects.select_related("cita__expediente__paciente"), pk=pk
+        )
+        datos = DatosLaboratorio.objects.first()
+
+        def _b64(fieldfile):
+            if not fieldfile or not os.path.exists(fieldfile.path):
+                return None, None
+            ext = fieldfile.name.lower().rsplit(".", 1)[-1]
+            mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "svg": "image/svg+xml"}.get(ext, "image/jpeg")
+            with open(fieldfile.path, "rb") as f:
+                return base64.b64encode(f.read()).decode(), mime
+
+        logo_b64, logo_mime = _b64(datos.logo) if datos else (None, None)
+        firma_b64, firma_mime = _b64(datos.firma_imagen) if datos else (None, None)
+        sello_b64, sello_mime = _b64(datos.sello_imagen) if datos else (None, None)
+
+        html = render_to_string("reports/receta.html", {
+            "receta": receta,
+            "paciente": receta.cita.expediente.paciente,
+            "cita": receta.cita,
+            "datos": datos,
+            "medicamentos": receta.medicamentos.all(),
+            "logo_b64": logo_b64, "logo_mime": logo_mime,
+            "firma_b64": firma_b64, "firma_mime": firma_mime,
+            "sello_b64": sello_b64, "sello_mime": sello_mime,
+        })
+        pdf = io.BytesIO()
+        pisa.CreatePDF(io.StringIO(html), dest=pdf)
+        response = HttpResponse(pdf.getvalue(), content_type="application/pdf")
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response["Content-Disposition"] = f'inline; filename="receta_{receta.pk}.pdf"'
+        return response

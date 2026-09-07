@@ -170,3 +170,51 @@ class CitaItem(models.Model):
         if not self.precio_usd:
             self.precio_usd = self.servicio.precio_usd
         super().save(*args, **kwargs)
+
+
+class Receta(models.Model):
+    """Receta e indicaciones de una cita (odontólogo externo firma con CO)."""
+    cita = models.ForeignKey(CitaDental, on_delete=models.CASCADE, related_name="recetas")
+    diagnostico = models.TextField("Diagnóstico", blank=True)
+    indicaciones_generales = models.TextField(
+        "Indicaciones generales adicionales", blank=True,
+        help_text="Indicaciones libres que aplican a toda la receta",
+    )
+    creada_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="recetas_creadas"
+    )
+    fecha = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "receta"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"Receta {self.pk} · {self.cita.expediente.paciente.full_name}"
+
+
+class RecetaMedicamento(models.Model):
+    """Medicamento de la receta: se escribe UNA vez y aparece en receta e indicaciones."""
+    receta = models.ForeignKey(Receta, on_delete=models.CASCADE, related_name="medicamentos")
+    nombre = models.CharField("Medicamento", max_length=120)
+    dosis = models.CharField("Dosis", max_length=60, blank=True)
+    frecuencia = models.CharField("Frecuencia", max_length=60, blank=True)
+    duracion = models.CharField("Duración", max_length=60, blank=True)
+    indicacion = models.TextField(
+        "Indicación específica", blank=True,
+        help_text="Si se deja vacía, se genera automáticamente con dosis/frecuencia/duración",
+    )
+
+    class Meta:
+        db_table = "receta_medicamento"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.nombre
+
+    @property
+    def indicacion_texto(self):
+        if self.indicacion.strip():
+            return self.indicacion
+        partes = [p for p in (self.dosis, self.frecuencia, self.duracion) if p.strip()]
+        return " · ".join(partes) if partes else "Según indicación del odontólogo"

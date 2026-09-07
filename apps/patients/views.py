@@ -71,7 +71,7 @@ class PacienteHistorialView(LoginRequiredMixin, PermissionRequiredMixin, DetailV
             expediente = self.object.expediente_dental
             context["expediente"] = expediente
             context["citas"] = expediente.citas.prefetch_related(
-                "dientes", "items__servicio"
+                "dientes", "items__servicio", "recetas"
             ).order_by("-fecha")
         except Exception:
             context["expediente"] = None
