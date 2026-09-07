@@ -10,7 +10,7 @@
       document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
 
-  <title>{% block title %}Laboratorio Clínico{% endblock %}</title>
+  <title>{% block title %}OdontoClin{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@ body[data-theme="azul"] .bg-white,body[data-theme="verde"] .bg-white,body[data-t
 body[data-theme="azul"] .text-slate-900,body[data-theme="verde"] .text-slate-900,body[data-theme="rosa"] .text-slate-900{color:#0f172a!important}
 </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 min-h-screen" data-theme="{{ tema|default:\'dark\' }}">
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen" data-theme="{{ tema|default:'dark' }}">
 
   {% if user.is_authenticated %}
   <!-- Backdrop para móvil -->
