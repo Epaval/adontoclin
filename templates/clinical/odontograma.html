@@ -4,18 +4,18 @@
 <style>
 .odonto-card{background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .odonto-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
-.odonto-arcada{display:flex;justify-content:center;gap:8px;padding:10px 0}
-.diente{width:34px;height:46px;position:relative;cursor:pointer;transition:transform .15s ease}
+.odonto-arcada{display:flex;justify-content:center;gap:8px}
+.diente{width:34px;height:46px;position:relative;cursor:pointer;transition:scale .15s ease}
 .diente:hover{scale:1.18;z-index:20}
 .diente svg{width:100%;height:100%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .diente-num{position:absolute;left:0;right:0;text-align:center;font-size:10px;color:#64748b;font-weight:700;font-family:monospace}
 .num-sup{bottom:-16px}.num-inf{top:-16px}
-.odonto-sep{height:2px;background:linear-gradient(90deg,transparent,#334155,transparent);margin:22px 0}
+.odonto-sep{height:2px;background:linear-gradient(90deg,transparent,#334155,transparent);margin:56px 0}
 .odonto-tooltip{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #334155;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:11px;width:200px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,.5);text-align:left}
 .diente:hover .odonto-tooltip{display:block}
 .tooltip-line{display:flex;align-items:center;gap:6px;margin:3px 0}
 .tooltip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.leyenda{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid #1e293b}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:16px;border-top:1px solid #1e293b}
 .leyenda-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8}
 .leyenda-color{width:14px;height:14px;border-radius:4px;border:1px solid #334155}
 .modal-odonto{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:16px}
@@ -33,9 +33,9 @@
       <a href="{% url 'patients:historial' paciente.pk %}" class="text-sm text-sky-400 hover:text-sky-300 font-semibold">← Ver historial completo</a>
     </div>
 
-    <p class="text-xs text-slate-500 mb-2 text-center">Pasa el mouse sobre un diente para ver su historial · Haz clic para registrar un tratamiento</p>
+    <p class="text-xs text-slate-500 mb-4 text-center">Pasa el mouse sobre un diente para ver su historial · Haz clic para registrar un tratamiento</p>
 
-    <div class="odonto-arcada" style="padding-bottom:30px">
+    <div class="odonto-arcada" style="padding-bottom:34px">
       {% for d in dientes_superior %}
       <div class="diente" data-fdi="{{ d.num }}" style="transform:translateY({{ d.off }}px)" onclick="abrirModal('{{ d.num }}')">
         <svg viewBox="0 0 34 46"><path d="M7 4 Q17 0 27 4 Q31 8 30 18 Q29 30 25 40 Q21 45 17 45 Q13 45 9 40 Q5 30 4 18 Q3 8 7 4 Z" fill="{{ colores_paciente|get_item:d.num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
@@ -51,14 +51,10 @@
       </div>
       {% endfor %}
     </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
 
     <div class="odonto-sep"></div>
 
-    <div class="odonto-arcada" style="padding-top:30px">
+    <div class="odonto-arcada" style="padding-top:34px">
       {% for d in dientes_inferior %}
       <div class="diente" data-fdi="{{ d.num }}" style="transform:translateY({{ d.off }}px)" onclick="abrirModal('{{ d.num }}')">
         <svg viewBox="0 0 34 46"><path d="M7 42 Q17 46 27 42 Q31 38 30 28 Q29 16 25 6 Q21 1 17 1 Q13 1 9 6 Q5 16 4 28 Q3 38 7 42 Z" fill="{{ colores_paciente|get_item:d.num|default:'#f8fafc' }}" stroke="#475569" stroke-width="1.5"/></svg>
@@ -74,10 +70,6 @@
       </div>
       {% endfor %}
     </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
 
     <div class="leyenda">
       {% for tipo, color in colores_leyenda %}
@@ -87,7 +79,6 @@
   </div>
 </div>
 
-<!-- Modal registrar tratamiento -->
 <div class="modal-odonto" id="modal-odonto">
   <div class="modal-box">
     <h2 class="text-lg font-bold text-white mb-1">Registrar tratamiento</h2>
