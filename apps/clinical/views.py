@@ -298,8 +298,14 @@ class RecetaPDFView(LoginRequiredMixin, View):
                 from PIL import Image
                 im = Image.open(_io.BytesIO(raw)).convert("RGBA")
                 bbox = im.getbbox()
-                if bbox:
+                if bbox and (bbox[2] - bbox[0] < im.size[0] * 0.95):
                     im = im.crop(bbox)
+                else:
+                    # fondo blanco/opaco: recortar por contenido oscuro
+                    gris = im.convert("L").point(lambda p: 255 if p < 210 else 0)
+                    bbox2 = gris.getbbox()
+                    if bbox2:
+                        im = im.crop(bbox2)
                 buf = _io.BytesIO()
                 im.save(buf, "PNG")
                 raw = buf.getvalue()
@@ -313,11 +319,11 @@ class RecetaPDFView(LoginRequiredMixin, View):
                 return base64.b64encode(raw).decode(), "image/png", dw, dh
 
         if datos and datos.firma_imagen:
-            firma_b64, firma_mime, firma_w, firma_h = _prep(datos.firma_imagen, 220, 80, 160, 55)
+            firma_b64, firma_mime, firma_w, firma_h = _prep(datos.firma_imagen, 240, 90, 180, 60)
         else:
             firma_w, firma_h = 160, 55
         if datos and datos.sello_imagen:
-            sello_b64, sello_mime, sello_w, sello_h = _prep(datos.sello_imagen, 150, 150, 110, 110)
+            sello_b64, sello_mime, sello_w, sello_h = _prep(datos.sello_imagen, 170, 170, 120, 120)
         else:
             sello_w, sello_h = 110, 110
 
