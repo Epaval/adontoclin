@@ -480,5 +480,13 @@ document.getElementById('modal-confirm').addEventListener('click', function(e) {
   if (e.target === this) cerrarConfirm();
 });
 </script>
+<script>
+document.addEventListener('click', function(e){
+  var tr = e.target.closest ? e.target.closest('tr.fila-click') : null;
+  if (!tr || !tr.dataset.url) return;
+  if (e.target.closest('a,button,input,select,textarea,form')) return;
+  location.href = tr.dataset.url;
+});
+</script>
 </body>
 </html>
