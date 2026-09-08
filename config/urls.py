@@ -6,7 +6,7 @@ from django.urls import include, path
 
 from apps.accounts.views import ConfiguracionInicialView, DashboardView
 from . import views as error_views
-from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, LicenciaView
+from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, AbrirCarpetaExportView, LicenciaView
 
 urlpatterns = [
     path('tema/', __import__('apps.core.views_tasa', fromlist=['cambiar_tema']).cambiar_tema, name='cambiar_tema'),
