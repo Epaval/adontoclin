@@ -55,7 +55,7 @@
   <table class="firma-box"><tr>
     <td style="border:none;text-align:center">
       {% if sello_b64 %}<img src="data:{{ sello_mime }};base64,{{ sello_b64 }}" style="width:{{ sello_w }}px;height:{{ sello_h }}px">{% endif %}
-      {% if firma_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="width:{{ firma_w }}px;height:{{ firma_h }}px;margin-top:-6px">{% endif %}
+      {% if firma_b64 and not sello_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="width:{{ firma_w }}px;height:{{ firma_h }}px">{% endif %}
       <div class="firma-linea"></div>
       <div class="firma-txt"><strong>{{ datos.bioanalista_nombre|default:"Odontólogo" }}</strong><br>CO: {{ datos.bioanalista_registro|default:"-" }}</div>
     </td>
