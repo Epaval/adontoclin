@@ -158,12 +158,16 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
         if hasta:
             qs = qs.filter(fecha_creacion__date__lte=hasta)
 
+        def _v(x):
+            return x() if callable(x) else x
+
         filas = []
         for f in qs:
+            pac = f.cita.expediente.paciente
             filas.append([
                 f.numero, f.numero_control, f.fecha_creacion.strftime("%d/%m/%Y %H:%M"),
-                f.cita.expediente.paciente.full_name,
-                f.cita.expediente.paciente.ci_efectivo or "-",
+                _v(pac.full_name),
+                _v(pac.ci_efectivo) or "-",
                 f.get_estado_display(), f.get_metodo_pago_display() if hasattr(f, "get_metodo_pago_display") else "",
                 float(f.subtotal), float(f.descuento), float(f.total), float(f.tasa),
                 round(float(f.total) * float(f.tasa), 2),
