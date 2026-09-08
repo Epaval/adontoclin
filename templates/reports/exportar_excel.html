@@ -1,37 +1,26 @@
 {% extends "base.html" %}
-
-{% block title %}Exportar facturación · OdontoClin{% endblock %}
-{% block page_title %}Exportar facturación a Excel{% endblock %}
-
 {% block content %}
-<div class="max-w-2xl animate-fade-in">
-  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-    <p class="text-sm text-slate-500 mb-6">
-      Descarga el libro de facturación en formato Excel (.xlsx) con dos hojas:
-      <span class="font-semibold text-slate-700">Facturas</span> y
-      <span class="font-semibold text-slate-700">Detalles</span>.
-      Incluye todas las facturas (emitidas, pagadas y anuladas con su motivo de anulación).<br>
-      <span class="text-emerald-600 font-semibold">✓ Se abrirá automáticamente en Excel.</span>
-    </p>
-
-    <form method="post" class="space-y-4">
-      {% csrf_token %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
+    <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:18px;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:30px">📊</div>
+    <h1 class="text-xl font-bold text-slate-900">Exportar facturación a Excel</h1>
+    <p class="text-sm text-slate-500 mt-2 mb-6">Descarga todas las facturas con paciente, CI, estado, montos en $ y Bs con la tasa aplicada.</p>
+    <a href="?descargar=1" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg">⬇ Descargar Excel ahora</a>
+    <div class="mt-8 pt-6 border-t border-slate-200 text-left">
+      <h2 class="text-sm font-bold text-slate-700 mb-3">Filtrar por rango de fechas</h2>
+      <form method="get" class="flex gap-3 items-end flex-wrap">
+        <input type="hidden" name="descargar" value="1">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Desde</label>
-          <input type="date" name="desde" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Desde</label>
+          <input type="date" name="desde" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
-          <input type="date" name="hasta" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Hasta</label>
+          <input type="date" name="hasta" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900">
         </div>
-      </div>
-      <p class="text-xs text-slate-400">Deja los campos vacíos para exportar todo el historial.</p>
-      <button type="submit"
-              class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-6 py-2.5 rounded-lg">
-        Descargar Excel
-      </button>
-    </form>
+        <button class="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Descargar con filtro</button>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

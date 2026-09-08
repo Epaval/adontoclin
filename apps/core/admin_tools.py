@@ -145,78 +145,70 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if openpyxl is None:
-            messages.error(request, "La exportacion a Excel no esta disponible en esta instalacion.")
-            return redirect(request.path)
-        desde = request.POST.get("desde") or None
-        hasta = request.POST.get("hasta") or None
+        import datetime as dt
+        import os
 
-        qs = Factura.objects.select_related("cita__expediente__paciente").order_by("numero_control")
+        from django.conf import settings
+
+        qs = Factura.objects.select_related("cita__expediente__paciente").order_by("-fecha_creacion")
+        desde = request.POST.get("desde") or request.GET.get("desde")
+        hasta = request.POST.get("hasta") or request.GET.get("hasta")
         if desde:
             qs = qs.filter(fecha_creacion__date__gte=desde)
         if hasta:
             qs = qs.filter(fecha_creacion__date__lte=hasta)
 
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Facturas"
-        fill = PatternFill("solid", fgColor="1E65C0")
-        font = Font(bold=True, color="FFFFFF")
-
-        ws.append(["N Control", "N Factura", "Fecha", "Paciente", "Estado", "Motivo anulacion", "Detalle motivo", "Metodo de pago", "Subtotal", "Descuento", "Total", "Tasa", "Total Bs"])
-        for c in ws[1]:
-            c.fill = fill
-            c.font = font
-            c.alignment = Alignment(horizontal="center")
-
-        total_general = Decimal("0")
-        total_general_bs = Decimal("0")
+        filas = []
         for f in qs:
-            tasa_f = f.tasa or Decimal("0")
-            if f.estado != "anulada":
-                total_general += f.total
-                total_general_bs += f.total * tasa_f
-            ws.append([
-                f.numero_control,
-                f.numero,
-                f.fecha_creacion.strftime("%d/%m/%Y"),
-                str(f.cita.expediente.paciente),
-                f.get_estado_display(),
-                f.get_motivo_anulacion_display() or "-",
-                f.motivo_anulacion_otro or "-",
-                f.get_metodo_pago_display() or "-",
-                float(f.subtotal),
-                float(f.descuento),
-                float(f.total),
-                float(tasa_f),
-                float(f.total * tasa_f),
+            filas.append([
+                f.numero, f.numero_control, f.fecha_creacion.strftime("%d/%m/%Y %H:%M"),
+                f.cita.expediente.paciente.full_name,
+                f.cita.expediente.paciente.ci_efectivo or "-",
+                f.get_estado_display(), f.get_metodo_pago_display() if hasattr(f, "get_metodo_pago_display") else "",
+                float(f.subtotal), float(f.descuento), float(f.total), float(f.tasa),
+                round(float(f.total) * float(f.tasa), 2),
             ])
+        encabezado = ["Numero", "Control", "Fecha", "Paciente", "CI", "Estado", "Metodo",
+                      "Subtotal $", "Descuento $", "Total $", "Tasa Bs/$", "Total Bs"]
 
-        ws.append([])
-        ws.append(["", "", "", "", "", "", "", "", "", "", "TOTAL:", float(total_general), float(total_general_bs)])
-        ws.cell(row=ws.max_row, column=11).font = Font(bold=True)
-        ws.cell(row=ws.max_row, column=12).font = Font(bold=True)
-        ws.cell(row=ws.max_row, column=13).font = Font(bold=True)
+        log_dir = os.path.join(getattr(settings, "DATA_DIR", settings.BASE_DIR), "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill
 
-        wd = wb.create_sheet("Detalles")
-        wd.append(["N Control", "N Factura", "Servicio", "Diente", "Cantidad", "Precio unit.", "Subtotal"])
-        for c in wd[1]:
-            c.fill = fill
-            c.font = font
-        for f in qs:
-            for d in f.detalles.select_related("servicio").all():
-                wd.append([
-                    f.numero_control, f.numero, d.servicio.nombre,
-                    d.diente_fdi or "-", d.cantidad,
-                    float(d.precio_unitario), float(d.subtotal),
-                ])
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Facturacion"
+            ws.append(encabezado)
+            for celda in ws[1]:
+                celda.font = Font(bold=True, color="FFFFFF")
+                celda.fill = PatternFill("solid", fgColor="0369A1")
+            for fila in filas:
+                ws.append(fila)
+            for col in ws.columns:
+                ws.column_dimensions[col[0].column_letter].width = 16
+            import io as _io
+            buf = _io.BytesIO()
+            wb.save(buf)
+            response = HttpResponse(
+                buf.getvalue(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            response["Content-Disposition"] = 'attachment; filename="facturacion_odontoclin.xlsx"'
+            return response
+        except Exception as exc:
+            # excel_fallback_csv: nunca dejar sin descarga
+            with open(os.path.join(log_dir, "excel.log"), "a", encoding="utf-8") as lf:
+                lf.write(f"{dt.datetime.now()}: {exc}\n")
+            import csv as _csv
+            import io as _io2
+            buf2 = _io2.StringIO()
+            w = _csv.writer(buf2, delimiter=";")
+            w.writerow(encabezado)
+            w.writerows(filas)
+            response = HttpResponse(buf2.getvalue().encode("utf-8-sig"), content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="facturacion_odontoclin.csv"'
+            return response
 
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        response = HttpResponse(
-            buffer.read(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = 'attachment; filename="facturacion_odontoclin.xlsx"'
-        return response
+
