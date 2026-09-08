@@ -1,79 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6 pb-10">
+<style>
+.dsh{max-width:1200px;margin:0 auto;padding-bottom:40px}
+.dsh-hero{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%);border-radius:20px;padding:24px 28px;box-shadow:0 14px 34px rgba(14,165,233,.25);margin-bottom:18px}
+.dsh-hello{font-size:22px;font-weight:800;color:#fff}
+.dsh-fecha{font-size:13px;color:rgba(255,255,255,.85);margin-top:3px}
+.dsh-hero-btns{display:flex;gap:10px;flex-wrap:wrap}
+.dsh-hbtn{padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(6px)}
+.dsh-hbtn:hover{background:rgba(255,255,255,.3)}
+.dsh-hbtn.pri{background:#fff;color:#0369a1;border-color:#fff}
+.dsh-hbtn.pri:hover{background:#e0f2fe}
+.dsh-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:900px){.dsh-kpis{grid-template-columns:repeat(2,1fr)}}
+.dsh-kpi{background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.dsh-kpi-ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.dsh-kpi-num{font-size:24px;font-weight:800;color:#f1f5f9;line-height:1}
+.dsh-kpi-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-top:4px;font-weight:700}
+.dsh-row{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:1000px){.dsh-row{grid-template-columns:1fr}}
+.dsh-card{background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.dsh-card h3{font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:12px}
+.dsh-cita{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:#1e293b;margin-bottom:6px}
+.dsh-cita-hora{font-size:12px;font-weight:800;color:#7dd3fc;font-family:monospace}
+.dsh-cita-nom{font-size:12px;color:#cbd5e1;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px}
+.dsh-linea{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;color:#94a3b8}
+.dsh-linea b{color:#f1f5f9}
+.dsh-bar{height:6px;background:#1e293b;border-radius:999px;margin-top:4px;overflow:hidden}
+.dsh-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0ea5e9,#38bdf8)}
+.dsh-acc{display:flex;flex-direction:column;gap:10px}
+.dsh-abtn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;font-size:13px;font-weight:700;color:#f1f5f9;background:#1e293b;border:1px solid #334155;text-align:left}
+.dsh-abtn:hover{background:#334155;transform:translateY(-1px)}
+.dsh-abtn .ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.dsh-abtn small{display:block;font-size:11px;color:#94a3b8;font-weight:500;margin-top:2px}
+</style>
 
-  <!-- Métricas -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-sky-100 flex items-center justify-center text-xl">👥</div>
-        <div><p class="text-2xl font-bold text-slate-900">{{ total_pacientes }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Pacientes</p></div>
-      </div>
+<div class="dsh">
+  <div class="dsh-hero">
+    <div>
+      <div class="dsh-hello">👋 Hola, {% firstof user.first_name user.get_username %}</div>
+      <div class="dsh-fecha">{{ hoy_fecha|date:"l d/m/Y" }} · Tasa BCV: {{ tasa_actual.valor }} Bs/$</div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl">📅</div>
-        <div><p class="text-2xl font-bold text-slate-900">{{ pacientes_del_dia }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Pacientes del día</p></div>
-      </div>
-    </div>
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center text-xl">🦷</div>
-        <div><p class="text-2xl font-bold text-slate-900">{{ total_examenes }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Servicios</p></div>
-      </div>
-    </div>
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-rose-100 flex items-center justify-center text-xl">📋</div>
-        <div><p class="text-2xl font-bold text-slate-900">{{ total_resultados }}</p><p class="text-xs text-slate-500 uppercase tracking-wide">Historias clínicas</p></div>
-      </div>
+    <div class="dsh-hero-btns">
+      <a class="dsh-hbtn pri" href="{% url 'patients:create' %}">+ Nuevo paciente</a>
+      <a class="dsh-hbtn" href="{% url 'clinical:agenda' %}">📅 Agenda</a>
+      <a class="dsh-hbtn" href="{% url 'billing:list' %}">$ Facturación</a>
     </div>
   </div>
 
-  <div class="grid md:grid-cols-3 gap-4">
-    <!-- Citas -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <h3 class="font-bold text-slate-900 mb-3">🗓 Citas</h3>
-      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Abiertas / en proceso</span><span class="font-bold text-sky-600">{{ ordenes_abiertas }}</span></div>
-      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Atendidas hoy</span><span class="font-bold text-emerald-600">{{ ordenes_cerradas_hoy }}</span></div>
-    </div>
-    <!-- Ingresos -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-      <h3 class="font-bold text-slate-900 mb-3">💰 Ingresos (emitidas)</h3>
-      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Hoy</span><span class="font-bold text-emerald-600">${{ ingresos_hoy }}</span></div>
-      <div class="flex justify-between text-sm py-1"><span class="text-slate-500">Este mes</span><span class="font-bold text-emerald-600">${{ ingresos_mes }}</span></div>
-    </div>
-    <!-- Acciones rápidas -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col">
-      <h3 class="font-bold text-slate-900 mb-3">⚡ Acciones rápidas</h3>
-      <div class="flex flex-col gap-2 flex-1">
-        <a href="{% url 'patients:create' %}" class="block w-full text-center bg-sky-500 hover:bg-sky-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold shadow">+ Nuevo paciente</a>
-        <a href="{% url 'clinical:expediente_list' %}" class="block w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-semibold">📋 Expedientes dentales</a>
-        <a href="{% url 'billing:list' %}" class="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold shadow">$ Facturación</a>
-      </div>
-    </div>
-  </div>
+  <div class="dsh-kpis">
+    <div class="dsh-kpi"><div class="dsh-kpi-ico" style="background:rgba(14,165,233,.15)">👥</div><div><div class="dsh-kpi-num">{{ total_pacientes }}</div><div class="dsh-kpi-lbl">Pacientes</div></div></div>
+    <div class="dsh-kpi"><div class="dsh-kpi-ico" style="background:rgba(245,158,11,.15)">📅</div><div><div class="dsh-kpi-num">{{ pacientes_del_dia }}</div><div class="dsh-kpi-lbl">Pacientes del día</div></div></div>
+    <div class="dsh-kpi"><div class="dsh-kpi-ico" style="background:rgba(139,92,246,.15)">🦷</div><div><div class="dsh-kpi-num">{{ total_examenes }}</div><div class="dsh-kpi-lbl">Servicios</div></div></div>
+    <div class="dsh-kpi"><div class="dsh-kpi-ico" style="background:rgba(16,185,129,.15)">💰</div><div><div class="dsh-kpi-num">${{ ingresos_mes }}</div><div class="dsh-kpi-lbl">Ingresos del mes</div></div></div>
   </div>
 
-  <!-- Top servicios -->
-  {% if top_examenes %}
-  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-    <h3 class="font-bold text-slate-900 mb-4">📊 Servicios más facturados</h3>
-    <div class="space-y-3">
-      {% for ex in top_examenes %}
-      <div>
-        <div class="flex justify-between text-sm mb-1">
-          <span class="font-medium text-slate-700">{{ ex.servicio__nombre }}</span>
-          <span class="text-slate-500">{{ ex.total }}</span>
-        </div>
-        <div class="w-full bg-slate-100 rounded-full h-2">
-          <div class="bg-sky-500 h-2 rounded-full" style="width: {% widthratio ex.total top_examenes.0.total 100 %}%"></div>
-        </div>
-      </div>
+  <div class="dsh-row">
+    <div class="dsh-card">
+      <h3>📅 Citas de hoy <a href="{% url 'clinical:agenda' %}" style="float:right;font-size:11px;color:#38bdf8;font-weight:700">ver agenda →</a></h3>
+      {% for c in citas_hoy %}
+      <a class="dsh-cita" href="{% url 'patients:historial' c.expediente.paciente.pk %}">
+        <span class="dsh-cita-hora">{{ c.fecha|date:"H:i" }}</span>
+        <span class="dsh-cita-nom">{{ c.expediente.paciente.full_name }}</span>
+        <span class="dsh-badge" style="{% if c.estado == 'atendida' %}background:rgba(16,185,129,.15);color:#6ee7b7{% elif c.estado == 'programada' %}background:rgba(14,165,233,.15);color:#7dd3fc{% elif c.estado == 'ausente' %}background:rgba(245,158,11,.15);color:#fcd34d{% else %}background:rgba(220,38,38,.15);color:#fca5a5{% endif %}">{{ c.get_estado_display }}</span>
+      </a>
+      {% empty %}
+      <p style="font-size:12px;color:#64748b">Sin citas para hoy. <a href="{% url 'clinical:cita_nueva' %}" style="color:#38bdf8;font-weight:700">Agendar →</a></p>
       {% endfor %}
     </div>
+
+    <div class="dsh-card">
+      <h3>💰 Ingresos (emitidas)</h3>
+      <div class="dsh-linea"><span>Hoy</span><b style="color:#6ee7b7">${{ ingresos_hoy }}</b></div>
+      <div class="dsh-linea"><span>Este mes</span><b style="color:#6ee7b7">${{ ingresos_mes }}</b></div>
+      <div class="dsh-linea"><span>Citas abiertas</span><b style="color:#7dd3fc">{{ ordenes_abiertas }}</b></div>
+      <div class="dsh-linea"><span>Atendidas hoy</span><b style="color:#6ee7b7">{{ ordenes_cerradas_hoy }}</b></div>
+    </div>
+
+    <div class="dsh-card">
+      <h3>⚡ Acciones rápidas</h3>
+      <div class="dsh-acc">
+        <a class="dsh-abtn" href="{% url 'patients:create' %}"><span class="ico" style="background:rgba(14,165,233,.15)">👤</span><span>Nuevo paciente<small>Registrar con representante si es menor</small></span></a>
+        <a class="dsh-abtn" href="{% url 'clinical:cita_nueva' %}"><span class="ico" style="background:rgba(139,92,246,.15)">📅</span><span>Agendar cita<small>Con control de solapes (90 min)</small></span></a>
+        <a class="dsh-abtn" href="{% url 'billing:list' %}"><span class="ico" style="background:rgba(16,185,129,.15)">💵</span><span>Facturación<small>PDF en Bs con tasa del día</small></span></a>
+      </div>
+    </div>
+  </div>
+
+  {% if top_examenes %}
+  <div class="dsh-card">
+    <h3>📊 Servicios más facturados</h3>
+    {% for ex in top_examenes %}
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px">
+        <span style="color:#cbd5e1;font-weight:600">{{ ex.servicio__nombre }}</span>
+        <span style="color:#64748b;font-weight:700">{{ ex.total }}</span>
+      </div>
+      <div class="dsh-bar"><i style="width:{% widthratio ex.total top_examenes.0.total 100 %}%"></i></div>
+    </div>
+    {% endfor %}
   </div>
   {% endif %}
 
+  {% if user.is_authenticated %}
+  <div class="dsh-card" style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="dsh-kpi-ico" style="background:rgba(16,185,129,.15)">🛢</div>
+      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">Copia de seguridad</div>
+      <div style="font-size:12px;color:#64748b">Respaldo completo de la base de datos</div></div>
+    </div>
+    <a class="dsh-hbtn pri" style="background:#10b981;border-color:#10b981;color:#fff" href="{% url 'backup' %}">⬇ Descargar respaldo</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
