@@ -53,25 +53,32 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "total_examenes": ServicioDental.objects.filter(activo=True).count(),
             "total_resultados": ExpedienteDental.objects.count(),
             "pacientes_del_dia": Paciente.objects.filter(
-                expediente_dental__citas__fecha__date=hoy
+                expediente_dental__citas__fecha__year=hoy.year,
+                expediente_dental__citas__fecha__month=hoy.month,
+                expediente_dental__citas__fecha__day=hoy.day,
             ).distinct().count(),
-            "ordenes_abiertas": CitaDental.objects.filter(
-                estado__in=["abierta", "en_proceso"]
-            ).count(),
+            "ordenes_abiertas": CitaDental.objects.filter(estado="programada").count(),
             "ordenes_cerradas_hoy": CitaDental.objects.filter(
-                estado="completada", fecha_creacion__date=hoy
+                estado="atendida",
+                fecha__year=hoy.year, fecha__month=hoy.month, fecha__day=hoy.day,
             ).count(),
             "ingresos_hoy": Factura.objects.filter(
-                estado="emitida", fecha_creacion__date=hoy
+                estado__in=["emitida", "pagada"],
+                fecha_creacion__year=hoy.year, fecha_creacion__month=hoy.month, fecha_creacion__day=hoy.day,
             ).aggregate(t=Sum("total"))["t"] or 0,
             "ingresos_mes": Factura.objects.filter(
-                estado="emitida", fecha_creacion__date__gte=hoy.replace(day=1)
+                estado__in=["emitida", "pagada"],
+                fecha_creacion__year=hoy.year, fecha_creacion__month=hoy.month,
             ).aggregate(t=Sum("total"))["t"] or 0,
             "top_examenes": list(
                 DetalleFactura.objects.values("servicio__nombre")
                 .annotate(total=Count("id"))
                 .order_by("-total")[:5]
             ),
+            "citas_hoy": CitaDental.objects.filter(
+                fecha__year=hoy.year, fecha__month=hoy.month, fecha__day=hoy.day,
+            ).select_related("expediente__paciente").order_by("fecha"),
+            "hoy_fecha": hoy,
         }
         context.update(stats)
         context["modo_escritorio"] = settings.ESCRITORIO
