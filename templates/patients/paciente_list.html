@@ -4,9 +4,12 @@
 <style>
 @media(max-width:820px){
   .tabla-scroll{overflow:visible!important}
-  .tabla-scroll table{display:block;overflow-x:auto!important;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .tabla-scroll table{display:block;overflow-x:auto!important;min-width:640px;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .tabla-hint{display:block!important}
 }
+.tabla-hint{display:none;text-align:center;font-size:11px;color:#64748b;padding:6px 0 0 0}
 </style>
+
 
 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-fade-in">
 
@@ -130,6 +133,7 @@
         {% endfor %}
       </tbody>
     </table></div>
+  <div class="tabla-hint">← Desliza horizontal para ver más →</div>
   </div>
 
   <!-- Paginación (6 por página) -->
