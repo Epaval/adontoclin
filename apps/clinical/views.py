@@ -302,13 +302,13 @@ class RecetaPDFView(LoginRequiredMixin, View):
                     im = im.crop(bbox)
                 else:
                     # fondo blanco/opaco: recortar por contenido oscuro
-                    gris = im.convert("L").point(lambda p: 255 if p < 210 else 0)
+                    gris = im.convert("L").point(lambda p: 255 if p < 180 else 0)
                     bbox2 = gris.getbbox()
                     if not bbox2:
                         return None, None, dw, dh  # imagen en blanco: no dibujar
                     area = (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
                     tinta = gris.crop(bbox2).histogram()[255]
-                    if area <= 0 or tinta / area < 0.004:
+                    if area <= 0 or tinta / area < 0.002:
                         return None, None, dw, dh  # sin tinta visible: no dibujar
                     im = im.crop(bbox2)
                 buf = _io.BytesIO()
