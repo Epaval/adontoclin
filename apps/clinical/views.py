@@ -288,21 +288,38 @@ class RecetaPDFView(LoginRequiredMixin, View):
         firma_b64, firma_mime = _b64(datos.firma_imagen) if datos else (None, None)
         sello_b64, sello_mime = _b64(datos.sello_imagen) if datos else (None, None)
 
-        def _dims(fieldfile, max_w, max_h, dw, dh):
-            """Dimensiones proporcionales para que el PDF no deforme la imagen."""
+        def _prep(fieldfile, max_w, max_h, dw, dh):
+            """Recorta bordes vacios y devuelve (b64, mime, w, h) proporcionales."""
+            import io as _io
+            if not fieldfile or not os.path.exists(fieldfile.path):
+                return None, None, dw, dh
+            raw = open(fieldfile.path, "rb").read()
             try:
                 from PIL import Image
-                im = Image.open(fieldfile.path)
+                im = Image.open(_io.BytesIO(raw)).convert("RGBA")
+                bbox = im.getbbox()
+                if bbox:
+                    im = im.crop(bbox)
+                buf = _io.BytesIO()
+                im.save(buf, "PNG")
+                raw = buf.getvalue()
                 w, h = im.size
                 r = min(max_w / w, max_h / h)
-                return int(w * r), int(h * r)
+                if r < 1 or w > max_w or h > max_h:
+                    pass
+                r = min(max_w / w, max_h / h)
+                return base64.b64encode(raw).decode(), "image/png", int(w * r), int(h * r)
             except Exception:
-                return dw, dh
+                return base64.b64encode(raw).decode(), "image/png", dw, dh
 
-        firma_w, firma_h = (_dims(datos.firma_imagen, 200, 70, 160, 55)
-                            if datos and datos.firma_imagen else (160, 55))
-        sello_w, sello_h = (_dims(datos.sello_imagen, 130, 130, 100, 100)
-                            if datos and datos.sello_imagen else (100, 100))
+        if datos and datos.firma_imagen:
+            firma_b64, firma_mime, firma_w, firma_h = _prep(datos.firma_imagen, 220, 80, 160, 55)
+        else:
+            firma_w, firma_h = 160, 55
+        if datos and datos.sello_imagen:
+            sello_b64, sello_mime, sello_w, sello_h = _prep(datos.sello_imagen, 150, 150, 110, 110)
+        else:
+            sello_w, sello_h = 110, 110
 
         html = render_to_string("reports/receta.html", {
             "receta": receta,
