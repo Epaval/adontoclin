@@ -9,7 +9,7 @@
       </div>
       <a href="{% url 'patients:list' %}" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold text-sm">+ Nueva consulta</a>
     </div>
-    <table class="w-full text-sm">
+    <div class="tabla-scroll"><table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
         <tr><th class="px-4 py-3 text-left">Paciente</th><th class="px-4 py-3 text-left">Fecha</th><th class="px-4 py-3 text-left">Motivo</th><th class="px-4 py-3 text-center">Dientes</th><th class="px-4 py-3 text-right">Acciones</th></tr>
       </thead>
@@ -29,7 +29,7 @@
         <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Sin expedientes. Crea la historia desde el historial del paciente.</td></tr>
         {% endfor %}
       </tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 {% endblock %}

@@ -80,7 +80,7 @@
     <span class="ag-stat" style="border-color:#f59e0b">Ausentes: <b style="color:#fcd34d">{{ resumen.ausentes }}</b></span>
   </div>
 
-  <div class="ag-grid">
+  <div class="ag-scroll"><div class="ag-grid">
     <div class="ag-dow">Lun</div><div class="ag-dow">Mar</div><div class="ag-dow">Mié</div>
     <div class="ag-dow">Jue</div><div class="ag-dow">Vie</div><div class="ag-dow">Sáb</div><div class="ag-dow">Dom</div>
     {% for semana in semanas %}
@@ -103,6 +103,20 @@
         <div class="ag-celda vacia"></div>
         {% endif %}
       {% endfor %}
+    {% endfor %}
+  </div>
+
+  </div>
+
+  <div class="ag-lista">
+    {% for c in citas_mes %}
+    <a class="ag-lista-item" href="{% url 'patients:historial' c.expediente.paciente.pk %}">
+      <span class="ag-lista-fecha">{{ c.fecha|date:"d/m H:i" }}</span>
+      <span class="ag-lista-nom">{{ c.expediente.paciente.full_name }}</span>
+      <span class="ag-lista-badge" style="{% if c.estado == 'atendida' %}background:rgba(16,185,129,.15);color:#6ee7b7{% elif c.estado == 'programada' %}background:rgba(14,165,233,.15);color:#7dd3fc{% elif c.estado == 'ausente' %}background:rgba(245,158,11,.15);color:#fcd34d{% else %}background:rgba(220,38,38,.15);color:#fca5a5{% endif %}">{{ c.get_estado_display }}</span>
+    </a>
+    {% empty %}
+    <p style="font-size:12px;color:#64748b">Sin citas este mes.</p>
     {% endfor %}
   </div>
 

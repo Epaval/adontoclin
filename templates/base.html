@@ -34,6 +34,19 @@ body[data-theme="rosa"] aside{background:linear-gradient(180deg,rgba(80,7,36,.96
 body[data-theme="azul"] header,body[data-theme="verde"] header,body[data-theme="rosa"] header{background:rgba(2,6,23,.5)!important;backdrop-filter:blur(10px)}
 body[data-theme] aside{backdrop-filter:blur(8px)}
 </style>
+<style>
+.tabla-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
+.tabla-scroll table{min-width:640px}
+.ag-lista{display:none}
+@media(max-width:820px){
+  .ag-scroll{display:none}
+  .ag-lista{display:block}
+  .ag-lista-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#1e293b;border:1px solid #334155;margin-bottom:8px}
+  .ag-lista-fecha{font-size:12px;font-weight:800;color:#7dd3fc;font-family:monospace;white-space:nowrap}
+  .ag-lista-nom{font-size:13px;color:#e2e8f0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ag-lista-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
+}
+</style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen" data-theme="{{ tema|default:'dark' }}">
 

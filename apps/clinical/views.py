@@ -457,6 +457,7 @@ class AgendaView(LoginRequiredMixin, TemplateView):
         ctx.update({
             "dias_pasados": dias_pasados,
             "dia_sel": dia_sel, "citas_dia": citas_dia,
+            "citas_mes": citas,
             "semanas": semanas, "por_dia": por_dia,
             "mes_nombre": f"{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m-1]} {y}",
             "mes_actual": f"{y}-{m:02d}",

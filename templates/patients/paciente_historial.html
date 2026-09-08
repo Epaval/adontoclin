@@ -111,7 +111,7 @@
               <a href="{% url 'clinical:cita_item_create' cita.pk %}" class="text-xs bg-sky-50 text-sky-600 hover:bg-sky-100 px-3 py-1.5 rounded-lg font-semibold">+ Agregar servicio</a>
             </div>
             {% if cita.items.all %}
-            <table class="w-full text-sm">
+            <div class="tabla-scroll"><table class="w-full text-sm">
               <thead><tr class="text-xs text-slate-400 uppercase"><th class="text-left py-1">Servicio</th><th class="text-center py-1">Diente</th><th class="text-center py-1">Cant.</th><th class="text-right py-1">Subtotal</th><th class="py-1"></th></tr></thead>
               <tbody class="divide-y divide-slate-100">
                 {% for it in cita.items.all %}
@@ -128,7 +128,7 @@
                 </tr>
                 {% endfor %}
               </tbody>
-            </table>
+            </table></div>
             <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
               <span class="text-base font-bold text-slate-900">Total: ${{ cita.total_usd }}</span>
               <form method="post" action="{% url 'billing:create' cita_pk=cita.pk %}">{% csrf_token %}
