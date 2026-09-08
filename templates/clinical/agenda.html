@@ -35,6 +35,15 @@
 .ag-leyenda{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
 .ag-leyenda span{font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:6px}
 .ag-leyenda i{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media(max-width:820px){
+  .ag-scroll{display:none!important}
+  .ag-lista{display:block!important}
+}
+.ag-lista{display:none}
+.ag-lista-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#1e293b;border:1px solid #334155;margin-bottom:8px}
+.ag-lista-fecha{font-size:12px;font-weight:800;color:#7dd3fc;font-family:monospace;white-space:nowrap}
+.ag-lista-nom{font-size:13px;color:#e2e8f0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-lista-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
 </style>
 
 <div class="ag-wrap">
