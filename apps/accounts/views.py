@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.db import models
 from apps.billing.models import DetalleFactura, Factura
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
@@ -45,6 +45,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         context = super().get_context_data(**kwargs)
         hoy = date.today()
+        hoy_dt = datetime.combine(hoy, time.min)
+        manana_dt = hoy_dt + timedelta(days=1)
         stats = {
             "total_pacientes": Paciente.objects.filter(activo=True).count(),
             "total_medicos": Medico.objects.filter(activo=True).count(),

@@ -16,6 +16,7 @@ urlpatterns = [
     path("buscar/", BusquedaGlobalView.as_view(), name="busqueda_global"),
     path("admin-lab/estadisticas/", EstadisticasView.as_view(), name="estadisticas"),
     path("admin-lab/licencia/", LicenciaView.as_view(), name="licencia_panel"),
+    path("admin-lab/abrir-carpeta/", AbrirCarpetaExportView.as_view(), name="abrir_carpeta_export"),
     path("admin-lab/exportar-excel/", FacturaExportarExcelView.as_view(), name="exportar_excel"),
     path("admin-lab/ajuste-precios/", AjusteMasivoPreciosView.as_view(), name="ajuste_masivo"),
     path("configuracion-inicial/", ConfiguracionInicialView.as_view(), name="configuracion_inicial"),

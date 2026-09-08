@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
+    <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:30px">✅</div>
+    <h1 class="text-xl font-bold text-slate-900">Archivo generado correctamente</h1>
+    <p class="text-sm text-slate-500 mt-2 mb-4">Tu Excel de facturación fue guardado en:</p>
+    <code class="block bg-slate-100 border border-slate-200 rounded-lg px-4 py-3 text-xs font-mono text-slate-700 break-all mb-6">{{ ruta }}</code>
+    <div class="flex gap-3 justify-center">
+      <a href="{% url 'abrir_carpeta_export' %}" class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm">📂 Abrir carpeta</a>
+      <a href="{% url 'exportar_excel' %}" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold">Volver</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -147,6 +147,7 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
     def post(self, request, *args, **kwargs):
         import datetime as dt
         import os
+        import os as _os
 
         from django.conf import settings
 
@@ -193,6 +194,16 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
             for col in ws.columns:
                 ws.column_dimensions[col[0].column_letter].width = 16
             import io as _io
+            from django.conf import settings as _st
+            if getattr(_st, "MODO_ESCRITORIO", False) or _os.environ.get("LABCLIN_MODO") == "escritorio":
+                import os as _oso
+                destino = _oso.path.join(_oso.path.expanduser("~"), "Documents", "OdontoClin")
+                _oso.makedirs(destino, exist_ok=True)
+                nombre = f"facturacion_{dt.datetime.now():%Y%m%d_%H%M%S}.xlsx"
+                ruta = _oso.path.join(destino, nombre)
+                wb.save(ruta)
+                from django.shortcuts import render as _render
+                return _render(request, "reports/exportado_local.html", {"ruta": ruta})
             buf = _io.BytesIO()
             wb.save(buf)
             response = HttpResponse(
@@ -216,3 +227,22 @@ class FacturaExportarExcelView(SoloSuperUser, TemplateView):
             return response
 
 
+
+
+class AbrirCarpetaExportView(LoginRequiredMixin, View):
+    def get(self, request):
+        import os
+        import subprocess
+        import sys
+        destino = os.path.join(os.path.expanduser("~"), "Documents", "OdontoClin")
+        os.makedirs(destino, exist_ok=True)
+        try:
+            if sys.platform == "win32":
+                os.startfile(destino)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", destino])
+            else:
+                subprocess.Popen(["xdg-open", destino])
+        except Exception:
+            pass
+        return redirect("exportar_excel")
