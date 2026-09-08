@@ -288,6 +288,22 @@ class RecetaPDFView(LoginRequiredMixin, View):
         firma_b64, firma_mime = _b64(datos.firma_imagen) if datos else (None, None)
         sello_b64, sello_mime = _b64(datos.sello_imagen) if datos else (None, None)
 
+        def _dims(fieldfile, max_w, max_h, dw, dh):
+            """Dimensiones proporcionales para que el PDF no deforme la imagen."""
+            try:
+                from PIL import Image
+                im = Image.open(fieldfile.path)
+                w, h = im.size
+                r = min(max_w / w, max_h / h)
+                return int(w * r), int(h * r)
+            except Exception:
+                return dw, dh
+
+        firma_w, firma_h = (_dims(datos.firma_imagen, 200, 70, 160, 55)
+                            if datos and datos.firma_imagen else (160, 55))
+        sello_w, sello_h = (_dims(datos.sello_imagen, 130, 130, 100, 100)
+                            if datos and datos.sello_imagen else (100, 100))
+
         html = render_to_string("reports/receta.html", {
             "receta": receta,
             "paciente": receta.cita.expediente.paciente,
@@ -297,6 +313,8 @@ class RecetaPDFView(LoginRequiredMixin, View):
             "logo_b64": logo_b64, "logo_mime": logo_mime,
             "firma_b64": firma_b64, "firma_mime": firma_mime,
             "sello_b64": sello_b64, "sello_mime": sello_mime,
+            "firma_w": firma_w, "firma_h": firma_h,
+            "sello_w": sello_w, "sello_h": sello_h,
         })
         pdf = io.BytesIO()
         pisa.CreatePDF(io.StringIO(html), dest=pdf)

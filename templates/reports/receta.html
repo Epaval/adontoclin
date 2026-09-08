@@ -53,14 +53,22 @@
   </table>
   <table class="firma-box"><tr>
     <td style="border:none;width:60%;text-align:center">
-      {% if firma_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="height:55px">{% endif %}
+      {% if firma_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="width:{{ firma_w }}px;height:{{ firma_h }}px">{% endif %}
       <div class="firma-linea"></div>
       <div class="firma-txt"><strong>{{ datos.bioanalista_nombre|default:"Odontólogo" }}</strong><br>CO: {{ datos.bioanalista_registro|default:"-" }}</div>
     </td>
     <td style="border:none;width:40%;text-align:center">
-      {% if sello_b64 %}<img src="data:{{ sello_mime }};base64,{{ sello_b64 }}" style="height:75px">{% endif %}
+      {% if sello_b64 %}<img src="data:{{ sello_mime }};base64,{{ sello_b64 }}" style="width:{{ sello_w }}px;height:{{ sello_h }}px">{% endif %}
     </td>
   </tr></table>
+
+  <!-- LÍNEA DE CORTE -->
+  <table style="width:100%;margin:20px 0 14px 0">
+    <tr><td style="border:none;border-top:2px dashed #64748b;padding:0;font-size:1px">&nbsp;</td></tr>
+    <tr><td style="border:none;text-align:center;font-size:9px;color:#64748b;padding-top:5px">
+      ✂ &nbsp;Cortar por aquí&nbsp; ·&nbsp; RECETA: para la farmacia&nbsp; ·&nbsp; INDICACIONES: para el paciente
+    </td></tr>
+  </table>
 
   <!-- SECCIÓN INDICACIONES -->
   <div class="sec">Indicaciones</div>
@@ -76,12 +84,12 @@
   </table>
   <table class="firma-box"><tr>
     <td style="border:none;width:60%;text-align:center">
-      {% if firma_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="height:55px">{% endif %}
+      {% if firma_b64 %}<img src="data:{{ firma_mime }};base64,{{ firma_b64 }}" style="width:{{ firma_w }}px;height:{{ firma_h }}px">{% endif %}
       <div class="firma-linea"></div>
       <div class="firma-txt"><strong>{{ datos.bioanalista_nombre|default:"Odontólogo" }}</strong><br>CO: {{ datos.bioanalista_registro|default:"-" }}</div>
     </td>
     <td style="border:none;width:40%;text-align:center">
-      {% if sello_b64 %}<img src="data:{{ sello_mime }};base64,{{ sello_b64 }}" style="height:75px">{% endif %}
+      {% if sello_b64 %}<img src="data:{{ sello_mime }};base64,{{ sello_b64 }}" style="width:{{ sello_w }}px;height:{{ sello_h }}px">{% endif %}
     </td>
   </tr></table>
 
