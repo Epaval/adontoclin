@@ -3,7 +3,7 @@ import subprocess
 import sys
 import time
 
-import requests
+
 from django.conf import settings
 from django.core.cache import cache
 
@@ -23,6 +23,7 @@ def _proceso_corriendo():
 
 
 def tunnel_status(force=False):
+    import requests
     url = getattr(settings, "TUNNEL_URL", None)
     if not url:
         return {"estado": "desactivado", "url": "", "proc": False, "remoto": False, "ts": 0}
