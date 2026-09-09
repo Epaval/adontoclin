@@ -162,8 +162,10 @@ start /wait "" "%TEMP%\OdontoClin-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORE
 
 echo [3/6] Copiando configuracion de {nombre}...
 set DEST=
-if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files\OdontoClin
-if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files (x86)\OdontoClin
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$p=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $p 'OdontoClin.lnk'; if(Test-Path $l){{(New-Object -ComObject WScript.Shell).CreateShortcut($l).TargetPath}}" 2^>nul`) do for %%f in ("%%i") do set "DEST=%%~dpf"
+if not defined DEST if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files\OdontoClin
+if not defined DEST if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files (x86)\OdontoClin
+if defined DEST if "%DEST:~-1%"=="\" set "DEST=%DEST:~0,-1%"
 if defined DEST (
     copy /Y "%~dp0.env" "%DEST%\.env" >nul
     echo      Config aplicada en %DEST%
