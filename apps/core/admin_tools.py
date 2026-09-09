@@ -253,27 +253,16 @@ class AdminAccesoRemotoView(LoginRequiredMixin, TemplateView):
     template_name = "admin/acceso_remoto.html"
 
     def get_context_data(self, **kwargs):
-        import subprocess
-        import requests
         import qrcode
         import io
         import base64
-        
+        from apps.core.tunnel import tunnel_status
+
         ctx = super().get_context_data(**kwargs)
-        url_tunel = "https://demo.facdin.com"
-        ctx["url_tunel"] = url_tunel
-        
-        # Verificar estado del túnel
-        estado = "desconocido"
-        try:
-            r = requests.get(url_tunel + "/accounts/login/", timeout=5)
-            if r.status_code in [200, 302]:
-                estado = "activo"
-            else:
-                estado = "caido"
-        except Exception:
-            estado = "caido"
-        ctx["estado_tunel"] = estado
+        st = tunnel_status(force=True)
+        ctx["url_tunel"] = st["url"] or "https://demo.facdin.com"
+        ctx["estado_tunel"] = "activo" if st["estado"] == "activo" else "caido"
+        ctx["detalle_tunel"] = st
         
         # Generar QR
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
