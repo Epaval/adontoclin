@@ -6,7 +6,7 @@ from django.urls import include, path
 
 from apps.accounts.views import ConfiguracionInicialView, DashboardView
 from . import views as error_views
-from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, AbrirCarpetaExportView, AdminAccesoRemotoView, LicenciaView
+from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, AbrirCarpetaExportView, AdminAccesoRemotoView, InstalarCloudflaredView, LicenciaView
 
 urlpatterns = [
     path('tema/', __import__('apps.core.views_tasa', fromlist=['cambiar_tema']).cambiar_tema, name='cambiar_tema'),
@@ -16,6 +16,8 @@ urlpatterns = [
     path("buscar/", BusquedaGlobalView.as_view(), name="busqueda_global"),
     path("admin-lab/estadisticas/", EstadisticasView.as_view(), name="estadisticas"),
     path("admin-lab/licencia/", LicenciaView.as_view(), name="licencia_panel"),
+    path("admin-lab/acceso-remoto/", AdminAccesoRemotoView.as_view(), name="acceso_remoto"),
+    path("instalar-cloudflared/", InstalarCloudflaredView.as_view(), name="instalar_cloudflared"),
     path("admin-lab/acceso-remoto/", AdminAccesoRemotoView.as_view(), name="acceso_remoto"),
     path("admin-lab/abrir-carpeta/", AbrirCarpetaExportView.as_view(), name="abrir_carpeta_export"),
     path("admin-lab/exportar-excel/", FacturaExportarExcelView.as_view(), name="exportar_excel"),

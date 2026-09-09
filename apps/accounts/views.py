@@ -292,3 +292,38 @@ def _seed_dental():
         ServicioDental.objects.get_or_create(
             codigo=c, defaults={"nombre": n, "descripcion": d, "precio_usd": p}
         )
+
+
+class InstalarCloudflaredView(LoginRequiredMixin, TemplateView):
+    """Ejecuta el script de instalación de cloudflared en Windows."""
+    template_name = "accounts/instalacion_cloudflared.html"
+
+    def get(self, request, *args, **kwargs):
+        import sys
+        import subprocess
+        from pathlib import Path
+        
+        if sys.platform != "win32":
+            return self.render_to_response({"error": "Solo disponible en Windows", "exito": False})
+        
+        try:
+            script = Path(__file__).parent.parent / "scripts" / "install_cloudflared_windows.py"
+            if not script.exists():
+                return self.render_to_response({"error": "Script no encontrado", "exito": False})
+            
+            result = subprocess.run(
+                [sys.executable, str(script)],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            
+            if result.returncode == 0:
+                return self.render_to_response({"mensaje": result.stdout, "exito": True})
+            else:
+                return self.render_to_response({"error": result.stderr, "exito": False})
+        
+        except subprocess.TimeoutExpired:
+            return self.render_to_response({"error": "Timeout en la instalación", "exito": False})
+        except Exception as e:
+            return self.render_to_response({"error": str(e), "exito": False})
