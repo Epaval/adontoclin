@@ -24,7 +24,7 @@ Name: "autoiniciar"; Description: "Iniciar servidor al encender Windows"; GroupD
 [Files]
 Source: "dist\OdontoClin\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "icons\*.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-#Source: "cloudflared.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 
 [Icons]
 Name: "{group}\OdontoClin"; Filename: "{app}\OdontoClin.exe"; IconFilename: "{app}\icons\icono_principal.ico"; Check: NotIsEstacion
