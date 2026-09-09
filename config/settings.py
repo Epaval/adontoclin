@@ -53,7 +53,7 @@ else:
         default=["localhost", "127.0.0.1"] if DEBUG else [],
     )
 
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=["https://*.trycloudflare.com", "https://*.facdin.com", "https://facdin.com"])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
