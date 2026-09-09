@@ -125,162 +125,117 @@ LABCLIN_PUERTO=8000
 LABCLIN_MODO=escritorio
 """
 
-        # --- descargar_app.bat (descarga el exe desde GitHub y lo lanza) ---
-        releases_url = getattr(settings, "LABCLIN_RELEASES_URL", "")
-        descargar_bat = f"""@echo off
+        # --- INSTALAR.bat unico: se auto-eleva y hace todo ---
+        instalar_bat = f"""@echo off
 chcp 65001 >nul
-title Instalador OdontoClin - {nombre}
-echo ================================================
-echo   Instalando OdontoClin - {nombre}
-echo ================================================
-echo.
-
+title Instalacion OdontoClin - {nombre}
 cd /d "%~dp0"
 
-echo [1/2] Descargando aplicacion desde GitHub...
-powershell -Command "try {{ Invoke-WebRequest -Uri '{releases_url}' -OutFile 'OdontoClin.exe' -ErrorAction Stop; Write-Host 'OK' }} catch {{ Write-Host 'Fallo la descarga manual: {releases_url}'; exit 1 }}"
-
-if not exist OdontoClin.exe (
-    echo.
-    echo No se pudo descargar OdontoClin.exe.
-    echo Descarguelo manualmente de:
-    echo   {releases_url}
-    echo y coloquelo en esta carpeta.
-    pause
-    exit /b 1
-)
-
-echo.
-echo [2/2] Iniciando OdontoClin...
-start "" "OdontoClin.exe"
-echo.
-echo La aplicacion se abrio. Complete el asistente inicial.
-echo Despues ejecute "instalar_acceso_remoto.bat" como administrador.
-echo.
-pause
-"""
-
-        # --- instalar_acceso_remoto.bat (instala cloudflared + servicio) ---
-        acceso_bat = f"""@echo off
-chcp 65001 >nul
-title Acceso Remoto - {nombre}
-echo ================================================
-echo   Instalando acceso remoto para {nombre}
-echo ================================================
-echo.
-
-:: Verificar permisos de administrador
+:: Auto-elevar a administrador si no lo somos
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Ejecute este archivo como ADMINISTRADOR
-    echo (clic derecho ^> Ejecutar como administrador)
+    echo Solicitando permisos de administrador...
+    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs -WorkingDirectory '%~dp0'"
+    exit /b
+)
+
+echo ================================================
+echo   Instalacion automatica - {nombre}
+echo ================================================
+echo.
+
+echo [1/6] Descargando instalador oficial...
+powershell -Command "try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
+if not exist "%TEMP%\OdontoClin-Setup.exe" (
+    echo ERROR: no se pudo descargar el instalador.
+    echo Verifique internet o descargue manualmente desde:
+    echo   https://github.com/Epaval/adontoclin/releases/latest
     pause
     exit /b 1
 )
 
-cd /d "%~dp0"
+echo [2/6] Instalando OdontoClin (silencioso, ~1 min)...
+start /wait "" "%TEMP%\OdontoClin-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 
-echo [1/4] Descargando cloudflared desde Cloudflare...
-powershell -Command "Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi' -OutFile '%%TEMP%%\\cloudflared.msi'"
-
-if not exist "%TEMP%\\cloudflared.msi" (
-    echo [ERROR] No se pudo descargar cloudflared
-    pause
-    exit /b 1
+echo [3/6] Copiando configuracion de {nombre}...
+set DEST=
+if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files\OdontoClin
+if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set DEST=C:\Program Files (x86)\OdontoClin
+if defined DEST (
+    copy /Y "%~dp0.env" "%DEST%\.env" >nul
+    echo      Config aplicada en %DEST%
+) else (
+    echo      No se encontro la carpeta de instalacion.
 )
 
-echo [2/4] Instalando cloudflared (silencioso)...
-msiexec /i "%TEMP%\\cloudflared.msi" /quiet /norestart
+echo [4/6] Instalando acceso remoto (cloudflared)...
+powershell -Command "Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi' -OutFile '%TEMP%\cf.msi' -UseBasicParsing"
+msiexec /i "%TEMP%\cf.msi" /quiet /norestart
 
-echo [3/4] Registrando tunel con su token...
+echo [5/6] Registrando tunel de {nombre}...
+net stop cloudflared >nul 2>&1
+sc delete cloudflared >nul 2>&1
 set TOKEN={token}
-"C:\\Program Files (x86)\\cloudflared\\cloudflared.exe" service install %TOKEN%
-if %errorlevel% neq 0 (
-    "C:\\Program Files\\cloudflared\\cloudflared.exe" service install %TOKEN%
+if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" (
+    "C:\Program Files (x86)\cloudflared\cloudflared.exe" service install %TOKEN%
+) else (
+    "C:\Program Files\cloudflared\cloudflared.exe" service install %TOKEN%
 )
+net start cloudflared >nul 2>&1
 
-echo [4/4] Iniciando servicio...
-net start cloudflared
+echo [6/6] Iniciando OdontoClin...
+if defined DEST start "" "%DEST%\OdontoClin.exe"
 
 echo.
 echo ================================================
-echo   Instalacion completada
+echo   INSTALACION COMPLETADA - {nombre}
+echo.
+echo   Internet:  {url_pub}
+echo   Red local: http://localhost:8000
 echo ================================================
-echo.
-echo   URL publica: {url_pub}
-echo.
-echo   Para detener:  net stop cloudflared
-echo   Para iniciar:  net start cloudflared
-echo.
-echo   La clinica "{nombre}" ya es accesible desde internet.
 echo.
 pause
 """
 
-        # --- LEEME.txt (guia para videollamada) ---
+# --- LEEME.txt (guia para videollamada) ---
         leeme = f"""OdontoClin - Instalacion para {nombre}
 ======================================
 
-CONTENIDO DEL PAQUETE
+INSTALACION (2 clics)
 ---------------------
-1. descargar_app.bat       - Descarga e inicia la aplicacion
-2. instalar_acceso_remoto.bat - Instala el acceso remoto (internet)
-3. .env                    - Configuracion personalizada
-4. LEEME.txt               - Este archivo
+1. Extraiga este ZIP en el Escritorio
+2. Doble clic en "INSTALAR_{slug_safe}.bat"
+3. Acepte el permiso de administrador ("Si")
+4. Espere los 6 pasos y listo
 
-PASO 1: INSTALAR LA APLICACION
--------------------------------
-1. Doble clic en "descargar_app.bat"
-   - Se descargara OdontoClin.exe (~100 MB)
-   - La aplicacion se abrira automaticamente
-2. Complete el asistente inicial:
-   - Crear usuario administrador
-   - Datos de la clinica
-   - Logo (opcional)
+QUE PASA SOLO
+-------------
+- Se descarga e instala OdontoClin
+- Se copia la configuracion de {nombre}
+- Se instala el acceso remoto a internet
+- Se abre OdontoClin para crear su usuario admin
 
-VERIFICACION PASO 1:
-- Desde ESTE PC, abra http://localhost:8000 en el navegador
-- Debe ver el login de OdontoClin con sus credenciales
+VERIFICAR (celular con DATOS, WiFi apagado)
+-------------------------------------------
+   {url_pub}
+Debe ver el login con candado HTTPS.
 
-PASO 2: INSTALAR ACCESO REMOTO
--------------------------------
-1. Cierre OdontoClin.exe
-2. Clic derecho en "instalar_acceso_remoto.bat"
-   > Ejecutar como administrador
-3. Espere los 4 pasos (descarga + instalacion + registro + inicio)
-4. Reabra OdontoClin.exe (doble clic)
+OTROS PCS DE LA CLINICA
+-----------------------
+Sin instalar nada, abren el navegador en:
+   http://IP_DE_ESTE_PC:8000
+(IP: cmd > ipconfig > Direccion IPv4)
 
-VERIFICACION PASO 2 (desdeel celular con DATOS MOVILES):
-- Abra el navegador del celular (apague WiFi)
-- Vaya a: {url_pub}
-- Debe ver el login con candado (HTTPS)
-
-OTROS PCS DE LA CLINICA (red local)
------------------------------------
-No instalan nada. Solo abren el navegador y van a:
-   http://DIRECCION_IP_DE_ESTE_PC:8000
-
-Para saber la IP de este PC:
-   Abra cmd y ejecute: ipconfig
-   Busque "Direccion IPv4": 192.168.x.x
-
-SOPORTE
--------
-Si algo falla, envie esta informacion a su proveedor:
-- Captura de pantalla del error
-- Que paso estaba ejecutando
-- Modelo de Windows (inicio > configuracion > sistema > acerca de)
-
-Clinica: {nombre}
-URL publica: {url_pub}
+SOPORTE: envie captura del error indicando en que paso estaba.
+Clinica: {nombre} | URL: {url_pub}
 """
+
 
         # --- Armar el ZIP en memoria ---
         buf = io.BytesIO()
         slug_safe = re.sub(r"[^a-zA-Z0-9]", "_", clinica.slug)
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr(f"OdontoClin_{slug_safe}/descargar_app.bat", descargar_bat)
-            zf.writestr(f"OdontoClin_{slug_safe}/instalar_acceso_remoto.bat", acceso_bat)
+            zf.writestr(f"OdontoClin_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat)
             zf.writestr(f"OdontoClin_{slug_safe}/.env", env_contenido)
             zf.writestr(f"OdontoClin_{slug_safe}/LEEME.txt", leeme)
 
