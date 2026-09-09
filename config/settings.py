@@ -82,7 +82,7 @@ INSTALLED_APPS = [
 
 # unaccent nativo solo en modo web (PostgreSQL)
 if not ESCRITORIO:
-    INSTALLED_APPS.append("")
+    INSTALLED_APPS.append("django.contrib.postgres")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
