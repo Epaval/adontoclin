@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
-hiddenimports = [
+hiddenimports = ['saas', 'saas.models', 'saas.views', 'saas.urls', 'saas.forms', 'saas.admin', 'saas.apps', 'saas.cloudflare_service', 
     "apps.accounts.management.commands.seed_datos",
     "apps.clinical.models",
     "apps.accounts.management.commands.seed_roles",
