@@ -23,6 +23,8 @@ hiddenimports += collect_submodules('pypdf')
 hiddenimports += collect_submodules('svglib')
 hiddenimports += collect_submodules('tinycss2')
 hiddenimports += collect_submodules('cssselect2')
+hiddenimports += collect_submodules('requests')      
+hiddenimports += collect_submodules('qrcode') 
 hiddenimports += [
     'django.contrib.auth.backends.ModelBackend',
     'django.contrib.auth.hashers.Argon2PasswordHasher',
@@ -35,6 +37,8 @@ hiddenimports += [
     'html5lib', 'pypdf', 'PIL',
     'openpyxl', 'svglib', 'tinycss2', 'cssselect2', 'argon2',
     'argon2.exceptions', 'argon2.low_level',
+    'request',
+    'qrcode',
 ]
 
 datas = [
@@ -47,6 +51,7 @@ datas = [
 ]
 datas += collect_data_files('reportlab')
 datas += collect_data_files('xhtml2pdf')
+datas += collect_data_files('qrcode')
 
 a = Analysis(
     ['desktop/launcher.py'],
