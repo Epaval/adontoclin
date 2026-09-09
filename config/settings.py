@@ -46,7 +46,7 @@ if not SECRET_KEY:
 
 # En escritorio aceptamos la red local del laboratorio
 if ESCRITORIO:
-    ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = [".trycloudflare.com", ".facdin.com", "facdin.com", "*"]
 else:
     ALLOWED_HOSTS = env.list(
         "DJANGO_ALLOWED_HOSTS",
