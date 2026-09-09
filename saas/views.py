@@ -149,7 +149,7 @@ echo.
 
 echo [1/6] Descargando instalador oficial...
 del "%TEMP%\OdontoClin-Setup.exe" >nul 2>&1
-powershell -Command "try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
+powershell -Command "try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
 for %%F in ("%TEMP%\OdontoClin-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
 if not exist "%TEMP%\OdontoClin-Setup.exe" (
     echo ERROR: no se pudo descargar el instalador.
