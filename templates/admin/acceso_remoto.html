@@ -44,6 +44,15 @@
         <li>• Sesión expira en 1 hora por seguridad</li>
       </ul>
     </div>
-  </div>
+  
+    <div class="mt-4 p-4 rounded-lg" style="background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.3)">
+      <h3 class="text-sm font-bold mb-2">🪟 Instalación en Windows</h3>
+      <p class="text-xs opacity-80 mb-3">Si ejecutas OdontoClin en Windows, puedes instalar cloudflared como servicio automático</p>
+      <a href="{% url 'instalar_cloudflared' %}" class="inline-block bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
+        ☑ Instalar servicio cloudflared
+      </a>
+    </div>
+
+</div>
 </div>
 {% endblock %}
