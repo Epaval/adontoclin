@@ -320,3 +320,6 @@ TUNNEL_URL = env("DJANGO_TUNNEL_URL", default="https://demo.facdin.com")
 
 # Rol de instalacion: "clinica" (operativa) o "proveedor" (solo gestion SaaS)
 LABCLIN_ROL = env("DJANGO_LABCLIN_ROL", default="clinica")
+
+# URL del ultimo release de OdontoClin.exe (GitHub Releases)
+LABCLIN_RELEASES_URL = env("DJANGO_RELEASES_URL", default="https://github.com/Epaval/adontoclin/releases/download/v0.4.0/OdontoClin.exe")
