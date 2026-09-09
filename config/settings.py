@@ -111,6 +111,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "apps.core.context_processors.rol_global",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.tema_clinica",
@@ -316,3 +317,6 @@ SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
 TUNNEL_URL = env("DJANGO_TUNNEL_URL", default="https://demo.facdin.com")
+
+# Rol de instalacion: "clinica" (operativa) o "proveedor" (solo gestion SaaS)
+LABCLIN_ROL = env("DJANGO_LABCLIN_ROL", default="clinica")

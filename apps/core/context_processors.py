@@ -17,3 +17,9 @@ def tema_clinica(request):
         return {"tema": d.tema if d else "dark"}
     except Exception:
         return {"tema": "dark"}
+
+
+def rol_global(request):
+    """Rol de la instalacion: clinica o proveedor."""
+    from django.conf import settings
+    return {"ROL": getattr(settings, "LABCLIN_ROL", "clinica")}

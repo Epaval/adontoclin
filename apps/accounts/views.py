@@ -33,6 +33,11 @@ from django.core.cache import cache
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Panel principal con métricas dentales."""
+    def get(self, request, *args, **kwargs):
+        if getattr(settings, "LABCLIN_ROL", "clinica") == "proveedor":
+            return redirect("saas:clinica_list")
+        return super().get(request, *args, **kwargs)
+
     template_name = "dashboard.html"
 
     def get_context_data(self, **kwargs):

@@ -7,19 +7,30 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
 
+from django.conf import settings
+from django.http import Http404
+
 from .models import Clinica
 from .forms import ClinicaForm
 from .cloudflare_service import CloudflareService
 
 
-class ClinicaListView(LoginRequiredMixin, ListView):
+class ProveedorRequired(LoginRequiredMixin):
+    """Solo accesible cuando LABCLIN_ROL == proveedor."""
+    def dispatch(self, request, *args, **kwargs):
+        if getattr(settings, "LABCLIN_ROL", "clinica") != "proveedor":
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ClinicaListView(ProveedorRequired, ListView):
     """Dashboard: lista de todas las clínicas."""
     model = Clinica
     template_name = "saas/clinica_list.html"
     context_object_name = "clinicas"
 
 
-class ClinicaCreateView(LoginRequiredMixin, CreateView):
+class ClinicaCreateView(ProveedorRequired, CreateView):
     """Formulario para crear una nueva clínica."""
     model = Clinica
     form_class = ClinicaForm
@@ -59,14 +70,14 @@ class ClinicaCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ClinicaDetailView(LoginRequiredMixin, DetailView):
+class ClinicaDetailView(ProveedorRequired, DetailView):
     """Detalle de una clínica con token e instrucciones."""
     model = Clinica
     template_name = "saas/clinica_detail.html"
     context_object_name = "clinica"
 
 
-class ClinicaVerificarView(LoginRequiredMixin, View):
+class ClinicaVerificarView(ProveedorRequired, View):
     """Verifica si el túnel de una clínica está activo."""
     
     def get(self, request, pk):
