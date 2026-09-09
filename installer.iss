@@ -1,11 +1,14 @@
 [Setup]
+#ifndef MyAppVersion
+#define MyAppVersion "0.0.0"
+#endif
 AppName=OdontoClin
-AppVersion=0.4.1
+AppVersion={#MyAppVersion}
 AppPublisher=OdontoClin Software
 DefaultDirName={autopf}\OdontoClin
 DefaultGroupName=OdontoClin
 OutputDir=instalador
-OutputBaseFilename=OdontoClin-Setup-0.4.1
+OutputBaseFilename=OdontoClin-Setup-{#MyAppVersion}
 Compression=lzma2/ultra64
 SolidCompression=yes
 PrivilegesRequired=lowest
