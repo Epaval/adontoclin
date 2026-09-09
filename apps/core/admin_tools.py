@@ -257,10 +257,11 @@ class AdminAccesoRemotoView(LoginRequiredMixin, TemplateView):
         import io
         import base64
         from apps.core.tunnel import tunnel_status
-
+        
         ctx = super().get_context_data(**kwargs)
         st = tunnel_status(force=True)
-        ctx["url_tunel"] = st["url"] or "https://demo.facdin.com"
+        url_tunel = st["url"] or "https://demo.facdin.com"
+        ctx["url_tunel"] = url_tunel
         ctx["estado_tunel"] = "activo" if st["estado"] == "activo" else "caido"
         ctx["detalle_tunel"] = st
         
