@@ -1,6 +1,6 @@
 """Servicio para gestionar túneles de Cloudflare vía API."""
 import os
-import requests
+
 from django.conf import settings
 
 
@@ -31,6 +31,7 @@ class CloudflareService:
             raise ValueError("Configura CLOUDFLARE_API_TOKEN o CLOUDFLARE_API_EMAIL+CLOUDFLARE_API_KEY en .env")
     
     def crear_tunnel(self, nombre: str) -> dict:
+        import requests
         """Crea un túnel y devuelve {tunnel_id, token}."""
         url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel"
         data = {"name": nombre, "tunnel_source": "cloudflare"}
