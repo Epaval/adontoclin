@@ -7,6 +7,9 @@ import socket
 import sys
 import threading
 import traceback
+import shutil
+import subprocess
+from pathlib import Path
 
 FROZEN = getattr(sys, "frozen", False)
 
@@ -38,6 +41,194 @@ else:
 
 ERROR_LOG = os.path.join(DATA_BASE, "launcher_error.log")
 ESTACION_CFG = os.path.join(DATA_BASE, "estacion.cfg")
+
+
+# ==================== FUNCIONES PARA CLOUDFLARE ====================
+
+def configurar_certificado_cloudflare():
+    """Copia el certificado de Cloudflare incluido en el instalador al perfil del usuario"""
+    try:
+        # Buscar el certificado en el directorio de la aplicación
+        if FROZEN:
+            # Ejecutable compilado
+            if hasattr(sys, '_MEIPASS'):
+                # Modo one-file
+                cert_source = Path(sys._MEIPASS) / '.cloudflared' / 'cert.pem'
+            else:
+                # Modo one-dir
+                cert_source = Path(EXE_DIR) / '.cloudflared' / 'cert.pem'
+        else:
+            # Modo desarrollo
+            cert_source = Path(EXE_DIR) / 'desktop' / 'cloudflared' / 'cert.pem'
+        
+        if not cert_source.exists():
+            print(f"⚠️ Certificado no encontrado en: {cert_source}")
+            return False
+        
+        # Ruta destino en el perfil del usuario
+        user_cloudflared = Path(os.environ.get('USERPROFILE', os.path.expanduser('~'))) / '.cloudflared'
+        user_cloudflared.mkdir(exist_ok=True)
+        cert_dest = user_cloudflared / 'cert.pem'
+        
+        # Copiar si no existe o es diferente
+        if not cert_dest.exists():
+            shutil.copy2(cert_source, cert_dest)
+            print(f"✅ Certificado Cloudflare instalado en {cert_dest}")
+            return True
+        else:
+            # Verificar si el archivo es el mismo (por tamaño)
+            if cert_source.stat().st_size != cert_dest.stat().st_size:
+                shutil.copy2(cert_source, cert_dest)
+                print(f"✅ Certificado Cloudflare actualizado")
+            return True
+    except Exception as e:
+        print(f"❌ Error configurando certificado: {e}")
+        return False
+
+
+def obtener_token_tunel():
+    """Obtiene el token del túnel desde archivo o variable de entorno"""
+    # 1. Intentar desde archivo tunnel_token.txt
+    token_file = Path(EXE_DIR) / 'tunnel_token.txt'
+    if token_file.exists():
+        token = token_file.read_text().strip()
+        if token:
+            print(f"✅ Token de túnel encontrado en archivo")
+            return token
+    
+    # 2. Intentar desde variable de entorno
+    token = os.environ.get('CLOUDFLARE_TOKEN', '')
+    if token:
+        print(f"✅ Token de túnel encontrado en variable de entorno")
+        return token
+    
+    return None
+
+
+def obtener_nombre_tunel():
+    """Obtiene el nombre del túnel desde archivo o variable de entorno"""
+    # 1. Intentar desde archivo tunnel_name.txt
+    name_file = Path(EXE_DIR) / 'tunnel_name.txt'
+    if name_file.exists():
+        name = name_file.read_text().strip()
+        if name:
+            print(f"✅ Nombre de túnel encontrado en archivo: {name}")
+            return name
+    
+    # 2. Intentar desde variable de entorno
+    name = os.environ.get('CLOUDFLARE_TUNNEL', '')
+    if name:
+        print(f"✅ Nombre de túnel encontrado en variable de entorno: {name}")
+        return name
+    
+    # 3. Intentar desde .env
+    env_file = Path(EXE_DIR) / '.env'
+    if env_file.exists():
+        try:
+            with open(env_file, 'r') as f:
+                for line in f:
+                    if line.startswith('CLOUDFLARE_TUNNEL='):
+                        name = line.strip().split('=', 1)[1].strip()
+                        if name:
+                            print(f"✅ Nombre de túnel encontrado en .env: {name}")
+                            return name
+        except Exception:
+            pass
+    
+    return None
+
+
+def iniciar_tunel_cloudflare():
+    """Inicia el túnel de Cloudflare en segundo plano"""
+    try:
+        # 1. Intentar obtener token
+        tunnel_token = obtener_token_tunel()
+        
+        # 2. Si no hay token, intentar obtener nombre de túnel
+        tunnel_name = None
+        if not tunnel_token:
+            tunnel_name = obtener_nombre_tunel()
+            if not tunnel_name:
+                print("⚠️ No se encontró configuración de túnel (token ni nombre)")
+                return False
+        
+        # Buscar cloudflared.exe
+        cloudflared_path = None
+        
+        # 1. Buscar en el directorio de la aplicación
+        possible_path = Path(EXE_DIR) / 'cloudflared.exe'
+        if possible_path.exists():
+            cloudflared_path = str(possible_path)
+        
+        # 2. Buscar en el PATH del sistema
+        if not cloudflared_path:
+            cloudflared_path = shutil.which('cloudflared.exe')
+        
+        # 3. Buscar en Program Files
+        if not cloudflared_path:
+            possible_paths = [
+                "C:\\Program Files\\cloudflared\\cloudflared.exe",
+                "C:\\Program Files (x86)\\cloudflared\\cloudflared.exe"
+            ]
+            for path in possible_paths:
+                if Path(path).exists():
+                    cloudflared_path = path
+                    break
+        
+        if not cloudflared_path:
+            print("⚠️ No se encontró cloudflared.exe")
+            return False
+        
+        # Construir comando
+        if tunnel_token:
+            cmd = [cloudflared_path, 'tunnel', 'run', '--token', tunnel_token]
+            print(f"🔗 Iniciando túnel con token (longitud: {len(tunnel_token)})")
+        else:
+            cmd = [cloudflared_path, 'tunnel', 'run', tunnel_name]
+            print(f"🔗 Iniciando túnel: {tunnel_name}")
+        
+        # Ejecutar en segundo plano sin ventana
+        if sys.platform == 'win32':
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                cwd=EXE_DIR
+            )
+        else:
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=EXE_DIR
+            )
+        
+        print(f"✅ Túnel Cloudflare iniciado correctamente")
+        return True
+    except Exception as e:
+        print(f"❌ Error iniciando túnel: {e}")
+        return False
+
+
+def leer_rol_instalacion():
+    """Lee el rol de instalación desde archivo generado por InnoSetup"""
+    try:
+        rol_file = Path(EXE_DIR) / 'rol.txt'
+        if rol_file.exists():
+            return rol_file.read_text().strip()
+    except Exception:
+        pass
+    return None
+
+
+def deberia_iniciar_tunel():
+    """Determina si debe iniciarse el túnel (solo en modo servidor o individual)"""
+    rol = leer_rol_instalacion()
+    # Servidor o individual (no estación)
+    return rol in ('servidor', 'individual', None)
+
+# ==================== FIN FUNCIONES CLOUDFLARE ====================
 
 
 def reportar_error(exc_texto):
@@ -291,6 +482,15 @@ def main():
         help="Modo estacion. Sin argumento: pide la IP. Con argumento: conecta directo.",
     )
     args = parser.parse_args()
+
+    # ==================== CONFIGURAR TÚNEL (SOLO SERVIDOR/INDIVIDUAL) ====================
+    if deberia_iniciar_tunel():
+        print("🔧 Configurando acceso remoto...")
+        configurar_certificado_cloudflare()
+        
+        print("🔗 Iniciando túnel Cloudflare...")
+        threading.Thread(target=iniciar_tunel_cloudflare, daemon=True).start()
+    # ==================== FIN CONFIGURACIÓN TÚNEL ====================
 
     # Modo estacion: conectar al servidor
     if args.conectar is not None:

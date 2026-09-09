@@ -1,16 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
-hiddenimports = ['saas', 'saas.models', 'saas.views', 'saas.urls', 'saas.forms', 'saas.admin', 'saas.apps', 'saas.cloudflare_service', 
+hiddenimports = [
+    'saas', 'saas.models', 'saas.views', 'saas.urls', 'saas.forms', 
+    'saas.admin', 'saas.apps', 'saas.cloudflare_service',
     "apps.accounts.management.commands.seed_datos",
     "apps.clinical.models",
     "apps.accounts.management.commands.seed_roles",
-    # Terceros usados en apps/config (archivos fuente, no se analizan solos)
     'environ', 'django_environ',
+    'requests',
+    'qrcode',
 ]
-# Django completo (apps/config son fuente y cargan módulos dinámicamente)
+
+# Django y terceros
 hiddenimports += collect_submodules('django')
-# Nuestros paquetes de terceros
 hiddenimports += collect_submodules('axes')
 hiddenimports += collect_submodules('simple_history')
 hiddenimports += collect_submodules('whitenoise')
@@ -23,8 +26,9 @@ hiddenimports += collect_submodules('pypdf')
 hiddenimports += collect_submodules('svglib')
 hiddenimports += collect_submodules('tinycss2')
 hiddenimports += collect_submodules('cssselect2')
-hiddenimports += collect_submodules('requests')      
-hiddenimports += collect_submodules('qrcode') 
+hiddenimports += collect_submodules('requests')
+hiddenimports += collect_submodules('qrcode')
+
 hiddenimports += [
     'django.contrib.auth.backends.ModelBackend',
     'django.contrib.auth.hashers.Argon2PasswordHasher',
@@ -37,18 +41,19 @@ hiddenimports += [
     'html5lib', 'pypdf', 'PIL',
     'openpyxl', 'svglib', 'tinycss2', 'cssselect2', 'argon2',
     'argon2.exceptions', 'argon2.low_level',
-    'request',
+    'requests',
     'qrcode',
 ]
 
 datas = [
     ('templates', 'templates'),
     ('staticfiles', 'staticfiles'),
-    # TU CÓDIGO VA COMO ARCHIVOS (no congelado): se importa en runtime
     ('apps', 'apps'),
     ('config', 'config'),
     ('icons', 'icons'),
+    ('desktop/cloudflared/cert.pem', '.cloudflared'),
 ]
+
 datas += collect_data_files('reportlab')
 datas += collect_data_files('xhtml2pdf')
 datas += collect_data_files('qrcode')
@@ -64,9 +69,7 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'matplotlib', 'numpy', 'pandas', 'pytest',
-        # Módulos stdlib no usados (seguros de excluir)
         'pydoc_data', 'doctest', 'lib2to3', 'idlelib', 'turtle',
-        # Django modules no usados (los demás son necesarios en web)
         'django.contrib.gis',
         'django.contrib.sites',
         'django.contrib.syndication',
