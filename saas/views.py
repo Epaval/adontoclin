@@ -99,8 +99,10 @@ class ClinicaVerificarView(ProveedorRequired, View):
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
+
+
 class ClinicaDescargarZipView(ProveedorRequired, View):
-    """Genera un ZIP con .env + 2 .bat + LEEME.txt para el cliente."""
+    """Genera un ZIP con INSTALAR.bat + .env + LEEME.txt para el cliente."""
 
     def get(self, request, pk):
         import io
@@ -113,6 +115,7 @@ class ClinicaDescargarZipView(ProveedorRequired, View):
         token = clinica.token or ""
         url_pub = clinica.url_publica
         nombre = clinica.nombre
+        slug_safe = re.sub(r"[^a-zA-Z0-9]", "_", clinica.slug)
 
         # --- .env personalizado ---
         env_contenido = f"""# Configuracion OdontoClin para {nombre}
@@ -197,7 +200,7 @@ echo.
 pause
 """
 
-# --- LEEME.txt (guia para videollamada) ---
+        # --- LEEME.txt ---
         leeme = f"""OdontoClin - Instalacion para {nombre}
 ======================================
 
@@ -230,10 +233,8 @@ SOPORTE: envie captura del error indicando en que paso estaba.
 Clinica: {nombre} | URL: {url_pub}
 """
 
-
         # --- Armar el ZIP en memoria ---
         buf = io.BytesIO()
-        slug_safe = re.sub(r"[^a-zA-Z0-9]", "_", clinica.slug)
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
             zf.writestr(f"OdontoClin_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat)
             zf.writestr(f"OdontoClin_{slug_safe}/.env", env_contenido)
