@@ -80,8 +80,11 @@ class CloudflareService:
             return False
     
 
-    def configurar_ingress(self, tunnel_id: str, hostname: str, service: str = "http://127.0.0.1:8015") -> bool:
+    def configurar_ingress(self, tunnel_id: str, hostname: str, service: str = None) -> bool:
         """Configura las reglas de ingress del túnel (hacia dónde enrutar el tráfico)."""
+        if service is None:
+            port = getattr(settings, "LABCLIN_INGRESS_PORT", "8000")
+            service = f"http://127.0.0.1:{port}"
         url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel/{tunnel_id}/configurations"
         data = {
             "config": {

@@ -323,3 +323,6 @@ LABCLIN_ROL = env("DJANGO_LABCLIN_ROL", default="clinica")
 
 # URL del ultimo release de OdontoClin.exe (GitHub Releases)
 LABCLIN_RELEASES_URL = env("DJANGO_RELEASES_URL", default="https://github.com/Epaval/adontoclin/releases/download/v0.4.0/OdontoClin.exe")
+
+# Puerto local donde el CLIENTE corre OdontoClin (Windows default 8000)
+LABCLIN_INGRESS_PORT = env("DJANGO_INGRESS_PORT", default="8000")
