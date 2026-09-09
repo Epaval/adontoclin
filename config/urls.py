@@ -16,6 +16,7 @@ urlpatterns = [
     path("buscar/", BusquedaGlobalView.as_view(), name="busqueda_global"),
     path("admin-lab/estadisticas/", EstadisticasView.as_view(), name="estadisticas"),
     path("admin-lab/licencia/", LicenciaView.as_view(), name="licencia_panel"),
+    path("saas/", include("saas.urls")),
     path("admin-lab/acceso-remoto/", AdminAccesoRemotoView.as_view(), name="acceso_remoto"),
     path("instalar-cloudflared/", InstalarCloudflaredView.as_view(), name="instalar_cloudflared"),
     path("admin-lab/acceso-remoto/", AdminAccesoRemotoView.as_view(), name="acceso_remoto"),
