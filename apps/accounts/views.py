@@ -6,7 +6,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.core.tunnel import tunnel_status, PermissionRequiredMixin
+from apps.core.tunnel import tunnel_status
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.management import call_command
 from django.db.models import Q
 from django.shortcuts import redirect, render

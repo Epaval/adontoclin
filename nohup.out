@@ -1,0 +1,68 @@
+2026-09-09T04:27:11Z INF Starting tunnel tunnelID=5ff8e38e-9252-49a2-b04e-1cdb74fa27b7
+2026-09-09T04:27:11Z INF Version 2026.8.3 (Checksum f29324fe934d1e100617484c78deef803c4dc2cd351d645bbde42e96b4fccc5e)
+2026-09-09T04:27:11Z INF GOOS: linux, GOVersion: go1.26.4, GoArch: amd64
+2026-09-09T04:27:11Z INF Settings: map[cred-file:/home/julio-perez/.cloudflared/5ff8e38e-9252-49a2-b04e-1cdb74fa27b7.json credentials-file:/home/julio-perez/.cloudflared/5ff8e38e-9252-49a2-b04e-1cdb74fa27b7.json]
+2026-09-09T04:27:11Z INF cloudflared will not automatically update if installed by a package manager.
+2026-09-09T04:27:11Z INF Generated Connector ID: 5024b72c-c87f-4498-92f6-8d5414a4b993
+2026-09-09T04:27:11Z INF Initial protocol quic
+2026-09-09T04:27:11Z INF ICMP proxy will use 192.168.10.106 as source for IPv4
+2026-09-09T04:27:11Z INF ICMP proxy will use fe80::f72d:29a:200c:9b14 in zone enp0s31f6 as source for IPv6
+2026-09-09T04:27:11Z WRN The user running cloudflared process has a GID (group ID) that is not within ping_group_range. You might need to add that user to a group within that range, or instead update the range to encompass a group the user is already in by modifying /proc/sys/net/ipv4/ping_group_range. Otherwise cloudflared will not be able to ping this network error="Group ID 1000 is not between ping group 1 to 0"
+2026-09-09T04:27:11Z WRN ICMP proxy feature is disabled error="cannot create ICMPv4 proxy: Group ID 1000 is not between ping group 1 to 0 nor ICMPv6 proxy: socket: permission denied"
+2026-09-09T04:27:11Z INF ICMP proxy will use 192.168.10.106 as source for IPv4
+2026-09-09T04:27:11Z INF ICMP proxy will use fe80::f72d:29a:200c:9b14 in zone enp0s31f6 as source for IPv6
+2026-09-09T04:27:11Z INF Starting metrics server on 127.0.0.1:20242/metrics
+2026-09-09T04:27:11Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveID(65074) CurveP256] connIndex=0 event=0 ip=198.41.192.27
+2026-09-09T04:27:12Z INF Registered tunnel connection connIndex=0 connection=971766b6-81b1-4a29-9e74-1274096f45a1 event=0 ip=198.41.192.27 location=mia01 protocol=quic
+2026-09-09T04:27:12Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveID(65074) CurveP256] connIndex=1 event=0 ip=198.41.200.43
+2026-09-09T04:27:12Z INF Registered tunnel connection connIndex=1 connection=dd203e8d-6d81-4d2f-95c6-c2fc13f55858 event=0 ip=198.41.200.43 location=mia08 protocol=quic
+2026-09-09T04:27:13Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveID(65074) CurveP256] connIndex=2 event=0 ip=198.41.192.227
+2026-09-09T04:27:13Z INF Registered tunnel connection connIndex=2 connection=77408f78-ad25-42ec-8bec-ba150a1e374a event=0 ip=198.41.192.227 location=mia01 protocol=quic
+2026-09-09T04:27:14Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveID(65074) CurveP256] connIndex=3 event=0 ip=198.41.200.53
+2026-09-09T04:27:14Z INF Registered tunnel connection connIndex=3 connection=3c272ce7-899f-4865-ab42-82d767620030 event=0 ip=198.41.200.53 location=mia04 protocol=quic
+2026-09-09T04:27:18Z INF +-------------------------------------------------------------------------------------+
+2026-09-09T04:27:18Z INF |                               CONNECTIVITY PRE-CHECKS                               |
+2026-09-09T04:27:18Z INF +-------------------------------------------------------------------------------------+
+2026-09-09T04:27:18Z INF |  COMPONENT         TARGET                     STATUS  DETAILS                       |
+2026-09-09T04:27:18Z INF |  DNS Resolution    region1.v2.argotunnel.com  PASS    DNS Resolved successfully     |
+2026-09-09T04:27:18Z INF |  DNS Resolution    region2.v2.argotunnel.com  PASS    DNS Resolved successfully     |
+2026-09-09T04:27:18Z INF |  UDP Connectivity  region1.v2.argotunnel.com  PASS    QUIC connection successful    |
+2026-09-09T04:27:18Z INF |  UDP Connectivity  region2.v2.argotunnel.com  PASS    QUIC connection successful    |
+2026-09-09T04:27:18Z INF |  TCP Connectivity  region1.v2.argotunnel.com  PASS    HTTP/2 connection successful  |
+2026-09-09T04:27:18Z INF |  TCP Connectivity  region2.v2.argotunnel.com  PASS    HTTP/2 connection successful  |
+2026-09-09T04:27:18Z INF |  Cloudflare API    api.cloudflare.com:443     PASS    API is reachable              |
+2026-09-09T04:27:18Z INF |                                                                                     |
+2026-09-09T04:27:18Z INF |  SUMMARY: Environment is healthy. cloudflared will use 'quic' as primary protocol.  |
+2026-09-09T04:27:18Z INF +-------------------------------------------------------------------------------------+
+2026-09-09T04:27:18Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region1.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region2.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region1.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region2.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region1.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=region2.v2.argotunnel.com
+2026-09-09T04:27:18Z INF precheck component="Cloudflare API" details="API is reachable" run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 status=pass target=api.cloudflare.com:443
+2026-09-09T04:27:18Z INF precheck complete hard_fail=false run_id=bb5500f5-a9a6-416c-a8c4-31b1535d08a9 suggested_protocol=quic
+2026-09-09T04:29:28Z INF Initiating graceful shutdown due to signal terminated ...
+2026-09-09T04:29:28Z ERR failed to run the datagram handler error="context canceled" connIndex=3 event=0 ip=198.41.200.53
+2026-09-09T04:29:28Z ERR failed to serve tunnel connection error="accept stream listener encountered a failure while serving" connIndex=3 event=0 ip=198.41.200.53
+2026-09-09T04:29:28Z ERR Serve tunnel error error="accept stream listener encountered a failure while serving" connIndex=3 event=0 ip=198.41.200.53
+2026-09-09T04:29:28Z INF Retrying connection in up to 1s connIndex=3 event=0 ip=198.41.200.53
+2026-09-09T04:29:28Z ERR failed to run the datagram handler error="context canceled" connIndex=2 event=0 ip=198.41.192.227
+2026-09-09T04:29:28Z ERR failed to serve tunnel connection error="accept stream listener encountered a failure while serving" connIndex=2 event=0 ip=198.41.192.227
+2026-09-09T04:29:28Z ERR Serve tunnel error error="accept stream listener encountered a failure while serving" connIndex=2 event=0 ip=198.41.192.227
+2026-09-09T04:29:28Z INF Retrying connection in up to 1s connIndex=2 event=0 ip=198.41.192.227
+2026-09-09T04:29:28Z ERR Connection terminated connIndex=2
+2026-09-09T04:29:28Z ERR Connection terminated connIndex=3
+2026-09-09T04:29:28Z ERR failed to run the datagram handler error="context canceled" connIndex=1 event=0 ip=198.41.200.43
+2026-09-09T04:29:28Z ERR failed to run the datagram handler error="context canceled" connIndex=0 event=0 ip=198.41.192.27
+2026-09-09T04:29:28Z ERR failed to serve tunnel connection error="accept stream listener encountered a failure while serving" connIndex=1 event=0 ip=198.41.200.43
+2026-09-09T04:29:28Z ERR failed to serve tunnel connection error="accept stream listener encountered a failure while serving" connIndex=0 event=0 ip=198.41.192.27
+2026-09-09T04:29:28Z ERR Serve tunnel error error="accept stream listener encountered a failure while serving" connIndex=0 event=0 ip=198.41.192.27
+2026-09-09T04:29:28Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.192.27
+2026-09-09T04:29:28Z ERR Connection terminated connIndex=0
+2026-09-09T04:29:28Z ERR Serve tunnel error error="accept stream listener encountered a failure while serving" connIndex=1 event=0 ip=198.41.200.43
+2026-09-09T04:29:28Z INF Retrying connection in up to 1s connIndex=1 event=0 ip=198.41.200.43
+2026-09-09T04:29:28Z ERR Connection terminated connIndex=1
+2026-09-09T04:29:28Z ERR no more connections active and exiting
+2026-09-09T04:29:28Z INF Tunnel server stopped
+2026-09-09T04:29:28Z INF Metrics server stopped
