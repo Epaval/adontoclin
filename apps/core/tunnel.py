@@ -22,7 +22,9 @@ def _proceso_corriendo():
 
 
 def tunnel_status(force=False):
-    import requests
+    from urllib.request import urlopen
+    from urllib.error import URLError
+    
     url = getattr(settings, "TUNNEL_URL", None)
     if not url:
         return {"estado": "desactivado", "url": "", "proc": False, "remoto": False, "ts": 0}
@@ -32,8 +34,8 @@ def tunnel_status(force=False):
     proc = _proceso_corriendo()
     remoto = False
     try:
-        r = requests.get(url + "/accounts/login/", timeout=5)
-        remoto = r.status_code in (200, 302)
+        with urlopen(url + "/accounts/login/", timeout=5) as response:
+            remoto = response.getcode() in (200, 302)
     except Exception:
         remoto = False
     if proc and remoto:
