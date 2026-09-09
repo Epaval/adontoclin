@@ -246,3 +246,43 @@ class AbrirCarpetaExportView(LoginRequiredMixin, View):
         except Exception:
             pass
         return redirect("exportar_excel")
+
+
+class AdminAccesoRemotoView(LoginRequiredMixin, TemplateView):
+    """Panel de acceso remoto: URL del túnel + estado + QR."""
+    template_name = "admin/acceso_remoto.html"
+
+    def get_context_data(self, **kwargs):
+        import subprocess
+        import requests
+        import qrcode
+        import io
+        import base64
+        
+        ctx = super().get_context_data(**kwargs)
+        url_tunel = "https://demo.facdin.com"
+        ctx["url_tunel"] = url_tunel
+        
+        # Verificar estado del túnel
+        estado = "desconocido"
+        try:
+            r = requests.get(url_tunel + "/accounts/login/", timeout=5)
+            if r.status_code in [200, 302]:
+                estado = "activo"
+            else:
+                estado = "caido"
+        except Exception:
+            estado = "caido"
+        ctx["estado_tunel"] = estado
+        
+        # Generar QR
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr.add_data(url_tunel)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="#1e293b", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        qr_b64 = base64.b64encode(buf.getvalue()).decode()
+        ctx["qr_base64"] = qr_b64
+        
+        return ctx
