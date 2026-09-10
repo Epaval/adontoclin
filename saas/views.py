@@ -163,7 +163,7 @@ powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $
 if not exist "%TEMP%\{dir_name}-Setup.exe" goto FAILDL
 for %%F in ("%TEMP%\{dir_name}-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
 echo [2/6] Instalando {dir_name} (silencioso, ~1 min)...
-start /wait "" "%TEMP%\{dir_name}-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+"%TEMP%\{dir_name}-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 echo      Setup terminado >> "%LOG%"
 echo [3/6] Copiando configuracion de {nombre}...
 set DEST=
