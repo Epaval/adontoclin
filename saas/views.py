@@ -169,7 +169,10 @@ if exist "C:\\Program Files (x86)\\OdontoClin\\OdontoClin.exe" set DEST=C:\\Prog
 
 if defined DEST (
     copy /Y "%~dp0.env" "%DEST%\\.env" >nul
-    echo      Config aplicada en %DEST%
+    if exist "%DEST%\\_internal" copy /Y "%~dp0.env" "%DEST%\\_internal\\.env" >nul
+    mkdir "%USERPROFILE%\\OdontoClin" 2>nul
+    copy /Y "%~dp0.env" "%USERPROFILE%\\OdontoClin\\.env" >nul
+    echo      Config aplicada en %DEST% (raiz, _internal y base usuario)
 ) else (
     echo      No se encontro la carpeta de instalacion.
 )
