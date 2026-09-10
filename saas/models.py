@@ -18,6 +18,11 @@ class Clinica(models.Model):
     tunnel_id = models.CharField("Tunnel ID", max_length=100, blank=True)
     token = models.TextField("Token de instalación", blank=True)
     estado = models.CharField("Estado", max_length=20, choices=ESTADO_CHOICES, default="creando")
+    tipo_producto = models.CharField(
+        "Producto", max_length=15,
+        choices=[("odontoclin", "OdontoClin"), ("labclin", "LabClin")],
+        default="odontoclin",
+    )
     
     # Datos del cliente
     cliente_nombre = models.CharField("Nombre del contacto", max_length=150, blank=True)

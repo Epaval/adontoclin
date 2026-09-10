@@ -5,7 +5,7 @@ from .models import Clinica
 class ClinicaForm(forms.ModelForm):
     class Meta:
         model = Clinica
-        fields = ["nombre", "slug", "cliente_nombre", "cliente_email", "cliente_telefono", "notas"]
+        fields = ["nombre", "slug", "cliente_nombre", "cliente_email", "cliente_telefono", "notas", "tipo_producto"]
         widgets = {
             "nombre": forms.TextInput(attrs={"class": "input", "placeholder": "Diente Sano"}),
             "slug": forms.TextInput(attrs={"class": "input", "placeholder": "dientesano"}),

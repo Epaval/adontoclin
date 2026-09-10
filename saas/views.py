@@ -132,6 +132,12 @@ CLOUDFLARE_TUNNEL={slug}
 """
 
         # --- INSTALAR.bat unico: goto sin bloques multi-linea + log ---
+        es_lab = clinica.tipo_producto == "labclin"
+        asset_pref = "LabClinico-Setup" if es_lab else "OdontoClin-Setup"
+        dir_name = "LabClinico" if es_lab else "OdontoClin"
+        exe_name = "LabClinico.exe" if es_lab else "OdontoClin.exe"
+        lnk_name = "Lab Clinico.lnk" if es_lab else "OdontoClin.lnk"
+        repo_slug = "Epaval/labclin" if es_lab else "Epaval/adontoclin"
         instalar_bat = f"""@echo off
 chcp 65001 >nul
 setlocal EnableExtensions
@@ -152,16 +158,16 @@ echo   Instalacion automatica - {nombre}
 echo ================================================
 echo.
 echo [1/6] Descargando instalador oficial...
-del "%TEMP%\OdontoClin-Setup.exe" >nul 2>&1
-powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
-if not exist "%TEMP%\OdontoClin-Setup.exe" goto FAILDL
-for %%F in ("%TEMP%\OdontoClin-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
+del "%TEMP%\{dir_name}-Setup.exe" >nul 2>&1
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/{repo_slug}/releases/latest' -UseBasicParsing; $a = $r.assets | Where-Object {{ $_.name -like '{asset_pref}*' }} | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\{dir_name}-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
+if not exist "%TEMP%\{dir_name}-Setup.exe" goto FAILDL
+for %%F in ("%TEMP%\{dir_name}-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
 echo [2/6] Instalando OdontoClin (silencioso, ~1 min)...
-start /wait "" "%TEMP%\OdontoClin-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+start /wait "" "%TEMP%\{dir_name}-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 echo      Setup terminado >> "%LOG%"
 echo [3/6] Copiando configuracion de {nombre}...
 set DEST=
-for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$p=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $p 'OdontoClin.lnk'; if(Test-Path $l){{(New-Object -ComObject WScript.Shell).CreateShortcut($l).TargetPath}}" 2^>nul`) do for %%f in ("%%i") do set "DEST=%%~dpf"
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$p=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $p '{lnk_name}'; if(Test-Path $l){{(New-Object -ComObject WScript.Shell).CreateShortcut($l).TargetPath}}" 2^>nul`) do for %%f in ("%%i") do set "DEST=%%~dpf"
 if not defined DEST if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files\OdontoClin"
 if not defined DEST if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files (x86)\OdontoClin"
 if defined DEST if "%DEST:~-1%"=="\" set "DEST=%DEST:~0,-1%"

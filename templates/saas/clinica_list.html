@@ -26,7 +26,7 @@
         {% for c in clinicas %}
         <tr style="border-bottom:1px solid var(--border)">
           <td class="p-4">
-            <div class="font-bold">{{ c.nombre }}</div>
+            <div class="font-bold">{{ c.nombre }} {% if c.tipo_producto == "labclin" %}🧪{% else %}🦷{% endif %}</div>
             <div class="text-xs opacity-60">Creada: {{ c.fecha_creacion|date:"d/m/Y" }}</div>
           </td>
           <td class="p-4">
