@@ -131,80 +131,63 @@ LABCLIN_MODO=escritorio
 CLOUDFLARE_TUNNEL={slug}
 """
 
-        # --- INSTALAR.bat ---
-        instalar_bat = f'''@echo off
+        # --- INSTALAR.bat unico: goto sin bloques multi-linea + log ---
+        instalar_bat = f"""@echo off
 chcp 65001 >nul
+setlocal EnableExtensions
 title Instalacion OdontoClin - {nombre}
 cd /d "%~dp0"
-
-:: Auto-elevar a administrador
+set LOG=%TEMP%\odontoclin_install.log
+echo Inicio %date% %time% > "%LOG%"
 net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Solicitando permisos de administrador...
-    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs -WorkingDirectory '%~dp0'"
-    exit /b
-)
-
+if %errorlevel% neq 0 goto ELEV
+goto MAIN
+:ELEV
+echo Solicitando permisos de administrador...
+powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs -WorkingDirectory '%~dp0'"
+exit /b
+:MAIN
 echo ================================================
 echo   Instalacion automatica - {nombre}
 echo ================================================
 echo.
-
 echo [1/6] Descargando instalador oficial...
-del "%TEMP%\\OdontoClin-Setup.exe" >nul 2>&1
-powershell -Command "try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
-if not exist "%TEMP%\\OdontoClin-Setup.exe" (
-    echo ERROR: no se pudo descargar el instalador.
-    pause
-    exit /b 1
-)
-
-echo [2/6] Instalando OdontoClin...
-start /wait "" "%TEMP%\\OdontoClin-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-
+del "%TEMP%\OdontoClin-Setup.exe" >nul 2>&1
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/Epaval/adontoclin/releases/latest' -UseBasicParsing; $a = $r.assets | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\OdontoClin-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
+if not exist "%TEMP%\OdontoClin-Setup.exe" goto FAILDL
+for %%F in ("%TEMP%\OdontoClin-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
+echo [2/6] Instalando OdontoClin (silencioso, ~1 min)...
+start /wait "" "%TEMP%\OdontoClin-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+echo      Setup terminado >> "%LOG%"
 echo [3/6] Copiando configuracion de {nombre}...
 set DEST=
-if exist "C:\\Program Files\\OdontoClin\\OdontoClin.exe" set DEST=C:\\Program Files\\OdontoClin
-if exist "C:\\Program Files (x86)\\OdontoClin\\OdontoClin.exe" set DEST=C:\\Program Files (x86)\\OdontoClin
-
-if defined DEST (
-    copy /Y "%~dp0.env" "%DEST%\\.env" >nul
-    if exist "%DEST%\\_internal" copy /Y "%~dp0.env" "%DEST%\\_internal\\.env" >nul
-    mkdir "%USERPROFILE%\\OdontoClin" 2>nul
-    copy /Y "%~dp0.env" "%USERPROFILE%\\OdontoClin\\.env" >nul
-    echo      Config aplicada en %DEST% (raiz, _internal y base usuario)
-) else (
-    echo      No se encontro la carpeta de instalacion.
-)
-
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$p=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $p 'OdontoClin.lnk'; if(Test-Path $l){{(New-Object -ComObject WScript.Shell).CreateShortcut($l).TargetPath}}" 2^>nul`) do for %%f in ("%%i") do set "DEST=%%~dpf"
+if not defined DEST if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files\OdontoClin"
+if not defined DEST if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files (x86)\OdontoClin"
+if defined DEST if "%DEST:~-1%"=="\" set "DEST=%DEST:~0,-1%"
+if not defined DEST goto NODST
+copy /Y "%~dp0.env" "%DEST%\.env" >nul
+if exist "%DEST%\_internal" copy /Y "%~dp0.env" "%DEST%\_internal\.env" >nul
+mkdir "%USERPROFILE%\OdontoClin" 2>nul
+copy /Y "%~dp0.env" "%USERPROFILE%\OdontoClin\.env" >nul
+echo      Config aplicada en %DEST%
+goto CFGOK
+:NODST
+echo      No se encontro la carpeta de instalacion
+:CFGOK
 echo [4/6] Instalando acceso remoto (cloudflared)...
-powershell -Command "Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi' -OutFile '%TEMP%\\cf.msi' -UseBasicParsing"
-msiexec /i "%TEMP%\\cf.msi" /quiet /norestart
-
-echo [5/6] Configurando tunel de {nombre}...
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi' -OutFile '%TEMP%\cf.msi' -UseBasicParsing"
+msiexec /i "%TEMP%\cf.msi" /quiet /norestart
+echo [5/6] Registrando tunel de {nombre}...
 net stop cloudflared >nul 2>&1
 sc delete cloudflared >nul 2>&1
-
-:: Guardar token y nombre del tunel
-if defined DEST (
-    echo {token} > "%DEST%\\tunnel_token.txt"
-    echo {slug} > "%DEST%\\tunnel_name.txt"
-)
-
-:: Registrar el servicio con el token
-set CLOUDFLARED_PATH=
-if exist "C:\\Program Files (x86)\\cloudflared\\cloudflared.exe" set CLOUDFLARED_PATH=C:\\Program Files (x86)\\cloudflared\\cloudflared.exe
-if exist "C:\\Program Files\\cloudflared\\cloudflared.exe" set CLOUDFLARED_PATH=C:\\Program Files\\cloudflared\\cloudflared.exe
-
-if defined CLOUDFLARED_PATH (
-    %CLOUDFLARED_PATH% service install {token} >nul 2>&1
-    net start cloudflared >nul 2>&1
-    echo      ✅ Tunel configurado
-)
-
+set TOKEN={token}
+if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files (x86)\cloudflared\cloudflared.exe" service install %TOKEN%
+if not exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files\cloudflared\cloudflared.exe" service install %TOKEN%
+net start cloudflared >nul 2>&1
+echo      Servicio iniciado >> "%LOG%"
 echo [6/6] Iniciando OdontoClin...
-if defined DEST start "" "%DEST%\\OdontoClin.exe"
-
+if defined DEST start "" "%DEST%\OdontoClin.exe"
 echo.
 echo ================================================
 echo   INSTALACION COMPLETADA - {nombre}
@@ -214,9 +197,16 @@ echo   Red local: http://localhost:8000
 echo ================================================
 echo.
 pause
-'''
+exit /b
+:FAILDL
+echo ERROR: no se pudo descargar el instalador.
+echo Verifique internet o descargue manualmente desde:
+echo   https://github.com/Epaval/adontoclin/releases/latest
+pause
+exit /b 1
+"""
 
-        # --- LEEME.txt ---
+# --- LEEME.txt ---
         leeme = f"""OdontoClin - Instalacion para {nombre}
 ======================================
 
