@@ -204,7 +204,9 @@ goto SVCOK
 echo      Servicio no disponible; creando tarea programada automatica...
 mkdir "%ProgramData%\OdontoClin" 2>nul
 copy /Y "%CFEXE%" "%ProgramData%\OdontoClin\cloudflared.exe" >nul
-schtasks /create /tn "OdontoClinTunnel" /tr "%ProgramData%\OdontoClin\cloudflared.exe tunnel run --token %TOKEN%" /sc onstart /ru SYSTEM /rl highest /f >nul
+> "%ProgramData%\OdontoClin\run_tunnel.cmd" echo @echo off
+>> "%ProgramData%\OdontoClin\run_tunnel.cmd" echo "%ProgramData%\OdontoClin\cloudflared.exe" tunnel run --token %TOKEN%
+schtasks /create /tn "OdontoClinTunnel" /tr "%ProgramData%\OdontoClin\run_tunnel.cmd" /sc onstart /ru SYSTEM /rl highest /f >nul
 if %errorlevel% neq 0 echo      ERROR al crear la tarea programada
 schtasks /run /tn "OdontoClinTunnel" >nul
 timeout /t 3 /nobreak >nul
