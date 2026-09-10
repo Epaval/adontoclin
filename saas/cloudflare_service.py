@@ -1,3 +1,4 @@
+import requests
 """Servicio para gestionar túneles de Cloudflare vía API."""
 import os
 
