@@ -141,7 +141,7 @@ CLOUDFLARE_TUNNEL={slug}
         instalar_bat = f"""@echo off
 chcp 65001 >nul
 setlocal EnableExtensions
-title Instalacion OdontoClin - {nombre}
+title Instalacion {dir_name} - {nombre}
 cd /d "%~dp0"
 set LOG=%TEMP%\odontoclin_install.log
 echo Inicio %date% %time% > "%LOG%"
@@ -162,14 +162,14 @@ del "%TEMP%\{dir_name}-Setup.exe" >nul 2>&1
 powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/{repo_slug}/releases/latest' -UseBasicParsing; $a = $r.assets | Where-Object {{ $_.name -like '{asset_pref}*' }} | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\{dir_name}-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
 if not exist "%TEMP%\{dir_name}-Setup.exe" goto FAILDL
 for %%F in ("%TEMP%\{dir_name}-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
-echo [2/6] Instalando OdontoClin (silencioso, ~1 min)...
+echo [2/6] Instalando {dir_name} (silencioso, ~1 min)...
 start /wait "" "%TEMP%\{dir_name}-Setup.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 echo      Setup terminado >> "%LOG%"
 echo [3/6] Copiando configuracion de {nombre}...
 set DEST=
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$p=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $p '{lnk_name}'; if(Test-Path $l){{(New-Object -ComObject WScript.Shell).CreateShortcut($l).TargetPath}}" 2^>nul`) do for %%f in ("%%i") do set "DEST=%%~dpf"
-if not defined DEST if exist "C:\Program Files\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files\OdontoClin"
-if not defined DEST if exist "C:\Program Files (x86)\OdontoClin\OdontoClin.exe" set "DEST=C:\Program Files (x86)\OdontoClin"
+if not defined DEST if exist "C:\Program Files\{dir_name}\{exe_name}" set "DEST=C:\Program Files\{dir_name}"
+if not defined DEST if exist "C:\Program Files (x86)\{dir_name}\{exe_name}" set "DEST=C:\Program Files (x86)\{dir_name}"
 if defined DEST if "%DEST:~-1%"=="\" set "DEST=%DEST:~0,-1%"
 if not defined DEST goto NODST
 copy /Y "%~dp0.env" "%DEST%\.env" >nul
