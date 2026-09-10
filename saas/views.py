@@ -243,9 +243,9 @@ Clinica: {nombre} | URL: {url_pub}
         # --- Armar el ZIP ---
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr(f"OdontoClin_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat)
+            zf.writestr(f"OdontoClin_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat.replace("\n", "\r\n"))
             zf.writestr(f"OdontoClin_{slug_safe}/.env", env_contenido)
-            zf.writestr(f"OdontoClin_{slug_safe}/LEEME.txt", leeme)
+            zf.writestr(f"OdontoClin_{slug_safe}/LEEME.txt", leeme.replace("\n", "\r\n"))
 
         buf.seek(0)
         nombre_zip = f"OdontoClin_{slug_safe}.zip"
