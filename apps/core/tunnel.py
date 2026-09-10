@@ -34,8 +34,9 @@ def tunnel_status(force=False):
     proc = _proceso_corriendo()
     remoto = False
     try:
-        with urlopen(url + "/accounts/login/", timeout=5) as response:
-            remoto = response.getcode() in (200, 302)
+        import requests as _rq
+        r = _rq.get(url + "/accounts/login/", timeout=8, allow_redirects=True)
+        remoto = 200 <= r.status_code < 400
     except Exception:
         remoto = False
     if proc and remoto:
