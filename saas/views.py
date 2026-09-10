@@ -135,7 +135,7 @@ CLOUDFLARE_TUNNEL={slug}
         es_lab = clinica.tipo_producto == "labclin"
         asset_pref = "LabClinico-Setup" if es_lab else "OdontoClin-Setup"
         dir_name = "LabClinico" if es_lab else "OdontoClin"
-        exe_name = "LabClinico.exe" if es_lab else "OdontoClin.exe"
+        exe_name = "LabClinico.exe" if es_lab else "{exe_name}"
         lnk_name = "Lab Clinico.lnk" if es_lab else "OdontoClin.lnk"
         repo_slug = "Epaval/labclin" if es_lab else "Epaval/adontoclin"
         instalar_bat = f"""@echo off
@@ -222,7 +222,7 @@ if %errorlevel% neq 0 echo      AVISO: cloudflared no arranco; reinicie el PC un
 :SVCOK
 echo      Servicio iniciado >> "%LOG%"
 echo [6/6] Iniciando OdontoClin...
-if defined DEST start "" "%DEST%\OdontoClin.exe"
+if defined DEST start "" "%DEST%\{exe_name}"
 echo.
 echo ================================================
 echo   INSTALACION COMPLETADA - {nombre}
