@@ -265,3 +265,45 @@ Clinica: {nombre} | URL: {url_pub}
         resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}"'
         resp["Content-Length"] = buf.getbuffer().nbytes
         return resp
+
+class ClinicaSuspenderView(ProveedorRequired, View):
+    """Suspende el servicio: desactiva el tunel y marca estado."""
+
+    def post(self, request, pk):
+        clinica = get_object_or_404(Clinica, pk=pk)
+        ok = CloudflareService().suspender_tunnel(clinica.tunnel_id) if clinica.tunnel_id else False
+        clinica.estado = "suspendido"
+        clinica.save(update_fields=["estado"])
+        if ok:
+            messages.success(request, f"Servicio de {clinica.nombre} SUSPENDIDO: su URL ya no responde.")
+        else:
+            messages.warning(request, f"{clinica.nombre} marcada como suspendida (no se pudo desactivar el tunel).")
+        return redirect("saas:clinica_list")
+
+
+class ClinicaReactivarView(ProveedorRequired, View):
+    """Reactiva el servicio de una clinica suspendida."""
+
+    def post(self, request, pk):
+        clinica = get_object_or_404(Clinica, pk=pk)
+        ok = CloudflareService().reactivar_tunnel(clinica.tunnel_id) if clinica.tunnel_id else False
+        clinica.estado = "activo"
+        clinica.save(update_fields=["estado"])
+        if ok:
+            messages.success(request, f"Servicio de {clinica.nombre} REACTIVADO: vuelve en linea en segundos.")
+        else:
+            messages.warning(request, f"{clinica.nombre} marcada activa (no se pudo reactivar el tunel).")
+        return redirect("saas:clinica_list")
+
+
+class ClinicaEliminarView(ProveedorRequired, View):
+    """Elimina clinica + tunel + DNS de forma definitiva."""
+
+    def post(self, request, pk):
+        clinica = get_object_or_404(Clinica, pk=pk)
+        if clinica.tunnel_id:
+            CloudflareService().eliminar_tunnel(clinica.tunnel_id)
+        nombre = clinica.nombre
+        clinica.delete()
+        messages.success(request, f"Clinica {nombre} eliminada junto con su tunel y DNS.")
+        return redirect("saas:clinica_list")

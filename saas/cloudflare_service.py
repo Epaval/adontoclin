@@ -105,6 +105,18 @@ class CloudflareService:
         result = r.json()
         return result.get("success", False)
 
+    def suspender_tunnel(self, tunnel_id: str) -> bool:
+        """Desactiva el tunel: el trafico publico cae de inmediato."""
+        url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel/{tunnel_id}"
+        r = requests.patch(url, headers=self.headers, json={"active": False}, timeout=30)
+        return r.ok
+
+    def reactivar_tunnel(self, tunnel_id: str) -> bool:
+        """Reactiva un tunel suspendido."""
+        url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel/{tunnel_id}"
+        r = requests.patch(url, headers=self.headers, json={"active": True}, timeout=30)
+        return r.ok
+
     def eliminar_tunnel(self, tunnel_id: str) -> bool:
         """Elimina un túnel (después de marcarlo como inactivo)."""
         # Primero marcar como inactivo

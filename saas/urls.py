@@ -9,4 +9,7 @@ urlpatterns = [
     path("<int:pk>/", views.ClinicaDetailView.as_view(), name="clinica_detail"),
     path("<int:pk>/descargar-zip/", views.ClinicaDescargarZipView.as_view(), name="clinica_descargar_zip"),
     path("<int:pk>/verificar/", views.ClinicaVerificarView.as_view(), name="clinica_verificar"),
+    path("<int:pk>/suspender/", views.ClinicaSuspenderView.as_view(), name="clinica_suspender"),
+    path("<int:pk>/reactivar/", views.ClinicaReactivarView.as_view(), name="clinica_reactivar"),
+    path("<int:pk>/eliminar/", views.ClinicaEliminarView.as_view(), name="clinica_eliminar"),
 ]
