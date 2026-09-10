@@ -190,11 +190,22 @@ set /a WAITN+=1
 if %WAITN% lss 8 goto WAITDEL
 :DELDONE
 set TOKEN={token}
+set CFEXE=
+if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" set "CFEXE=C:\Program Files (x86)\cloudflared\cloudflared.exe"
+if exist "C:\Program Files\cloudflared\cloudflared.exe" set "CFEXE=C:\Program Files\cloudflared\cloudflared.exe"
 if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files (x86)\cloudflared\cloudflared.exe" service install %TOKEN%
 if not exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files\cloudflared\cloudflared.exe" service install %TOKEN%
 net start cloudflared
 sc query cloudflared | findstr /i "RUNNING" >nul
-if %errorlevel% neq 0 echo      AVISO: el servicio no arranco. Reinicie el PC y ejecute: net start cloudflared
+if %errorlevel% neq 0 goto SVCFALL
+echo      Servicio cloudflared RUNNING
+goto SVCOK
+:SVCFALL
+echo      Servicio no disponible; creando tarea programada automatica...
+schtasks /create /tn "OdontoClinTunnel" /tr "\"%CFEXE%\" tunnel run --token %TOKEN%" /sc onstart /ru SYSTEM /rl highest /f >nul
+schtasks /run /tn "OdontoClinTunnel" >nul
+echo      Tarea OdontoClinTunnel creada y ejecutada (sin intervencion)
+:SVCOK
 echo      Servicio iniciado >> "%LOG%"
 echo [6/6] Iniciando OdontoClin...
 if defined DEST start "" "%DEST%\OdontoClin.exe"
