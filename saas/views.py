@@ -181,10 +181,20 @@ msiexec /i "%TEMP%\cf.msi" /quiet /norestart
 echo [5/6] Registrando tunel de {nombre}...
 net stop cloudflared >nul 2>&1
 sc delete cloudflared >nul 2>&1
+set WAITN=0
+:WAITDEL
+sc query cloudflared >nul 2>&1
+if %errorlevel% equ 1060 goto DELDONE
+timeout /t 2 /nobreak >nul
+set /a WAITN+=1
+if %WAITN% lss 8 goto WAITDEL
+:DELDONE
 set TOKEN={token}
 if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files (x86)\cloudflared\cloudflared.exe" service install %TOKEN%
 if not exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" "C:\Program Files\cloudflared\cloudflared.exe" service install %TOKEN%
-net start cloudflared >nul 2>&1
+net start cloudflared
+sc query cloudflared | findstr /i "RUNNING" >nul
+if %errorlevel% neq 0 echo      AVISO: el servicio no arranco. Reinicie el PC y ejecute: net start cloudflared
 echo      Servicio iniciado >> "%LOG%"
 echo [6/6] Iniciando OdontoClin...
 if defined DEST start "" "%DEST%\OdontoClin.exe"
