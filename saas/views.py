@@ -202,9 +202,15 @@ echo      Servicio cloudflared RUNNING
 goto SVCOK
 :SVCFALL
 echo      Servicio no disponible; creando tarea programada automatica...
-schtasks /create /tn "OdontoClinTunnel" /tr "\"%CFEXE%\" tunnel run --token %TOKEN%" /sc onstart /ru SYSTEM /rl highest /f >nul
+mkdir "%ProgramData%\OdontoClin" 2>nul
+copy /Y "%CFEXE%" "%ProgramData%\OdontoClin\cloudflared.exe" >nul
+schtasks /create /tn "OdontoClinTunnel" /tr "%ProgramData%\OdontoClin\cloudflared.exe tunnel run --token %TOKEN%" /sc onstart /ru SYSTEM /rl highest /f >nul
+if %errorlevel% neq 0 echo      ERROR al crear la tarea programada
 schtasks /run /tn "OdontoClinTunnel" >nul
-echo      Tarea OdontoClinTunnel creada y ejecutada (sin intervencion)
+timeout /t 3 /nobreak >nul
+tasklist /FI "IMAGENAME eq cloudflared.exe" | findstr /i "cloudflared" >nul
+if %errorlevel% equ 0 echo      Tarea ejecutada: cloudflared corriendo sin servicio
+if %errorlevel% neq 0 echo      AVISO: cloudflared no arranco; reinicie el PC una vez
 :SVCOK
 echo      Servicio iniciado >> "%LOG%"
 echo [6/6] Iniciando OdontoClin...
