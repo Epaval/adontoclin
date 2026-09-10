@@ -135,7 +135,7 @@ CLOUDFLARE_TUNNEL={slug}
         es_lab = clinica.tipo_producto == "labclin"
         asset_pref = "LabClinico-Setup" if es_lab else "OdontoClin-Setup"
         dir_name = "LabClinico" if es_lab else "OdontoClin"
-        exe_name = "LabClinico.exe" if es_lab else "{exe_name}"
+        exe_name = "LabClinico.exe" if es_lab else "OdontoClin.exe"
         lnk_name = "Lab Clinico.lnk" if es_lab else "OdontoClin.lnk"
         repo_slug = "Epaval/labclin" if es_lab else "Epaval/adontoclin"
         instalar_bat = f"""@echo off
@@ -174,8 +174,8 @@ if defined DEST if "%DEST:~-1%"=="\" set "DEST=%DEST:~0,-1%"
 if not defined DEST goto NODST
 copy /Y "%~dp0.env" "%DEST%\.env" >nul
 if exist "%DEST%\_internal" copy /Y "%~dp0.env" "%DEST%\_internal\.env" >nul
-mkdir "%USERPROFILE%\OdontoClin" 2>nul
-copy /Y "%~dp0.env" "%USERPROFILE%\OdontoClin\.env" >nul
+mkdir "%USERPROFILE%\{dir_name}" 2>nul
+copy /Y "%~dp0.env" "%USERPROFILE%\{dir_name}\.env" >nul
 echo      Config aplicada en %DEST%
 goto CFGOK
 :NODST
@@ -208,20 +208,20 @@ echo      Servicio cloudflared RUNNING
 goto SVCOK
 :SVCFALL
 echo      Servicio no disponible; creando tarea programada automatica...
-mkdir "%ProgramData%\OdontoClin" 2>nul
-copy /Y "%CFEXE%" "%ProgramData%\OdontoClin\cloudflared.exe" >nul
-> "%ProgramData%\OdontoClin\\run_tunnel.cmd" echo @echo off
->> "%ProgramData%\OdontoClin\\run_tunnel.cmd" echo "%ProgramData%\OdontoClin\cloudflared.exe" tunnel run --token %TOKEN%
-schtasks /create /tn "OdontoClinTunnel" /tr "%ProgramData%\OdontoClin\\run_tunnel.cmd" /sc onstart /ru SYSTEM /rl highest /f >nul
+mkdir "%ProgramData%\{dir_name}" 2>nul
+copy /Y "%CFEXE%" "%ProgramData%\{dir_name}\cloudflared.exe" >nul
+> "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo @echo off
+>> "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo "%ProgramData%\{dir_name}\cloudflared.exe" tunnel run --token %TOKEN%
+schtasks /create /tn "{dir_name}Tunnel" /tr "%ProgramData%\{dir_name}\\run_tunnel.cmd" /sc onstart /ru SYSTEM /rl highest /f >nul
 if %errorlevel% neq 0 echo      ERROR al crear la tarea programada
-schtasks /run /tn "OdontoClinTunnel" >nul
+schtasks /run /tn "{dir_name}Tunnel" >nul
 timeout /t 3 /nobreak >nul
 tasklist /FI "IMAGENAME eq cloudflared.exe" | findstr /i "cloudflared" >nul
 if %errorlevel% equ 0 echo      Tarea ejecutada: cloudflared corriendo sin servicio
 if %errorlevel% neq 0 echo      AVISO: cloudflared no arranco; reinicie el PC una vez
 :SVCOK
 echo      Servicio iniciado >> "%LOG%"
-echo [6/6] Iniciando OdontoClin...
+echo [6/6] Iniciando {dir_name}...
 if defined DEST start "" "%DEST%\{exe_name}"
 echo.
 echo ================================================
