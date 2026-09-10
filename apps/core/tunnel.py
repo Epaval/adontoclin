@@ -13,6 +13,7 @@ def _proceso_corriendo():
             out = subprocess.run(
                 ["tasklist", "/FI", "IMAGENAME eq cloudflared.exe"],
                 capture_output=True, text=True, timeout=5,
+                creationflags=0x08000000,  # CREATE_NO_WINDOW: sin parpadeo de consola
             ).stdout
             return "cloudflared.exe" in out
         return subprocess.run(["pgrep", "-f", "cloudflared"],
