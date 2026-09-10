@@ -67,20 +67,15 @@ class CloudflareService:
         return result.get("success", False)
     
     def verificar_tunel_activo(self, tunnel_id: str) -> bool:
-        """Verifica si un túnel tiene conexiones activas."""
-        url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel/{tunnel_id}"
-        
+        """True solo si el tunel tiene al menos una conexion viva (replicas)."""
+        url = f"{self.BASE_URL}/accounts/{self.account_id}/cfd_tunnel/{tunnel_id}/connections"
         try:
             r = requests.get(url, headers=self.headers, timeout=10)
-            r.raise_for_status()
-            result = r.json()
-            
-            # Un túnel está activo si tiene al menos 1 conexión
-            conexiones = result.get("result", {}).get("connections", [])
-            return len(conexiones) > 0
+            if r.ok:
+                return len(r.json().get("result", [])) > 0
         except Exception:
-            return False
-    
+            pass
+        return False
 
     def configurar_ingress(self, tunnel_id: str, hostname: str, service: str = None) -> bool:
         """Configura las reglas de ingress del túnel (hacia dónde enrutar el tráfico)."""
