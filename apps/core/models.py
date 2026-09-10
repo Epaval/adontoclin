@@ -124,3 +124,28 @@ class TasaCambio(models.Model):
     @classmethod
     def actual(cls):
         return cls.objects.order_by("-fecha", "-id").first()
+
+
+class ConfiguracionClinica(models.Model):
+    """Configuracion global de la clinica (singleton pk=1)."""
+    nombre_clinica = models.CharField(max_length=120, default="OdontoClin")
+    wa_prefijo = models.CharField(max_length=5, default="58", verbose_name="Prefijo de pais (WhatsApp)")
+    plantilla_whatsapp = models.TextField(
+        default="Hola {nombre} 👋 le saluda {clinica}. Le recordamos su cita de "
+                "{servicio} el {fecha} a las {hora}. Por favor confirme respondiendo SI. ¡Gracias!"
+    )
+
+    class Meta:
+        verbose_name = "Configuracion de la clinica"
+        verbose_name_plural = "Configuracion de la clinica"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def cargar(cls):
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj

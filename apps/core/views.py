@@ -73,3 +73,50 @@ class BusquedaGlobalView(LoginRequiredMixin, TemplateView):
                 Q(nombre__icontains=q) | Q(codigo__icontains=q)
             ).filter(activo=True)[:10]
         return ctx
+
+
+class RecordatoriosWhatsAppView(LoginRequiredMixin, TemplateView):
+    """Citas del dia con boton de recordatorio WhatsApp por paciente."""
+    template_name = "core/recordatorios_whatsapp.html"
+
+    def get_context_data(self, **kwargs):
+        from datetime import date, datetime
+        from apps.clinical.models import CitaDental
+        from .models import ConfiguracionClinica
+        ctx = super().get_context_data(**kwargs)
+        try:
+            f = datetime.strptime(self.request.GET.get("fecha", ""), "%Y-%m-%d").date()
+        except Exception:
+            f = date.today()
+        ctx["fecha"] = f
+        ctx["citas"] = (CitaDental.objects.filter(fecha__date=f)
+                        .select_related("expediente__paciente").order_by("fecha"))
+        ctx["cfg"] = ConfiguracionClinica.cargar()
+        return ctx
+
+
+class ConfiguracionWhatsAppView(LoginRequiredMixin, View):
+    """Plantilla WhatsApp editable por clinica con preview."""
+    def get(self, request):
+        from django.shortcuts import render
+        from .models import ConfiguracionClinica
+        from .whatsapp import renderizar_plantilla
+        cfg = ConfiguracionClinica.cargar()
+        preview = renderizar_plantilla(cfg.plantilla_whatsapp, nombre="María Pérez",
+                                       clinica=cfg.nombre_clinica, servicio="Limpieza dental",
+                                       fecha="15/09/2026", hora="10:30")
+        return render(request, "core/config_whatsapp.html", {"cfg": cfg, "preview": preview})
+
+    def post(self, request):
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        from .models import ConfiguracionClinica
+        cfg = ConfiguracionClinica.cargar()
+        cfg.nombre_clinica = request.POST.get("nombre_clinica", cfg.nombre_clinica)[:120]
+        cfg.wa_prefijo = request.POST.get("wa_prefijo", cfg.wa_prefijo)[:5]
+        tpl = request.POST.get("plantilla_whatsapp", "")
+        if tpl.strip():
+            cfg.plantilla_whatsapp = tpl
+        cfg.save()
+        messages.success(request, "Configuración de WhatsApp guardada.")
+        return redirect("config_whatsapp")

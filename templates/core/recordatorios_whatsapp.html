@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load whatsapp_tags %}
+{% block title %}
+<div class="max-w-5xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-2">📲 Recordatorios por WhatsApp</h1>
+  <p class="opacity-70 text-sm mb-4">Citas del {{ fecha|date:"d/m/Y" }} — el botón abre WhatsApp con el mensaje ya redactado.</p>
+  <form method="get" class="mb-4 flex gap-2 items-center">
+    <input type="date" name="fecha" value="{{ fecha|date:'Y-m-d' }}" class="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm">
+    <button class="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded text-sm font-bold">Ver ese día</button>
+    <a href="{% url 'config_whatsapp' %}" class="underline text-sm ml-4">⚙️ Editar plantilla de la clínica</a>
+  </form>
+  <table class="w-full text-sm">
+    <tr class="opacity-70 text-left"><th class="p-2">Hora</th><th class="p-2">Paciente</th><th class="p-2">Teléfono</th><th class="p-2">Servicio</th><th class="p-2 text-center">Recordar</th></tr>
+    {% for c in citas %}
+    <tr class="border-t border-slate-700">
+      <td class="p-2">{{ c.fecha|date:"H:i" }}</td>
+      <td class="p-2">{{ c.expediente.paciente.nombres }} {{ c.expediente.paciente.apellidos }}</td>
+      <td class="p-2">{{ c.expediente.paciente.telefono|default:"—" }}</td>
+      <td class="p-2">{% for i in c.items.all %}{{ i.servicio.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}{{ c.motivo|default:"Consulta" }}{% endfor %}</td>
+      <td class="p-2 text-center">{% wa_link c %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="p-6 text-center opacity-60">No hay citas para este día.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

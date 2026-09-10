@@ -8,7 +8,11 @@ from apps.accounts.views import ConfiguracionInicialView, DashboardView
 from . import views as error_views
 from apps.core.admin_tools import AjusteMasivoPreciosView, EstadisticasView, FacturaExportarExcelView, AbrirCarpetaExportView, AdminAccesoRemotoView, InstalarCloudflaredView, LicenciaView
 
+from apps.core import views as core_views
+
 urlpatterns = [
+    path("whatsapp/recordatorios/", core_views.RecordatoriosWhatsAppView.as_view(), name="recordatorios_whatsapp"),
+    path("whatsapp/config/", core_views.ConfiguracionWhatsAppView.as_view(), name="config_whatsapp"),
     path('tema/', __import__('apps.core.views_tasa', fromlist=['cambiar_tema']).cambiar_tema, name='cambiar_tema'),
     path("clinical/", include("apps.clinical.urls")),
     path("admin/", admin.site.urls),

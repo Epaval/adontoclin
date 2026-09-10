@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}
+<div class="max-w-3xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-4">⚙️ Configuración de WhatsApp</h1>
+  {% if messages %}{% for m in messages %}<div class="bg-green-900/40 border border-green-600 rounded p-3 mb-4 text-sm">{{ m }}</div>{% endfor %}{% endif %}
+  <form method="post" class="space-y-4">{% csrf_token %}
+    <div><label class="text-sm font-bold">Nombre de la clínica (firma del mensaje)</label>
+      <input name="nombre_clinica" value="{{ cfg.nombre_clinica }}" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 mt-1"></div>
+    <div><label class="text-sm font-bold">Prefijo de país</label>
+      <input name="wa_prefijo" value="{{ cfg.wa_prefijo }}" maxlength="5" class="w-24 bg-slate-800 border border-slate-600 rounded px-3 py-2 mt-1"></div>
+    <div><label class="text-sm font-bold">Plantilla del mensaje</label>
+      <textarea name="plantilla_whatsapp" rows="5" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 mt-1">{{ cfg.plantilla_whatsapp }}</textarea>
+      <p class="text-xs opacity-60 mt-1">Variables: {nombre} {clinica} {servicio} {fecha} {hora}</p></div>
+    <div class="bg-slate-800/60 rounded p-4 text-sm"><b>Vista previa:</b><br>{{ preview }}</div>
+    <button class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded font-bold">Guardar</button>
+    <a href="{% url 'recordatorios_whatsapp' %}" class="underline text-sm ml-3">← Volver a recordatorios</a>
+  </form>
+</div>
+{% endblock %}
