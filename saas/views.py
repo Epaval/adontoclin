@@ -188,6 +188,7 @@ msiexec /i "%TEMP%\cf.msi" /quiet /norestart
 echo [5/6] Registrando tunel de {nombre}...
 net stop cloudflared >nul 2>&1
 sc delete cloudflared >nul 2>&1
+reg delete "HKLM\\SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\Cloudflared" /f >nul 2>&1
 set WAITN=0
 :WAITDEL
 sc query cloudflared >nul 2>&1
@@ -213,10 +214,10 @@ mkdir "%ProgramData%\{dir_name}" 2>nul
 copy /Y "%CFEXE%" "%ProgramData%\{dir_name}\cloudflared.exe" >nul
 > "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo @echo off
 >> "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo "%ProgramData%\{dir_name}\cloudflared.exe" tunnel run --token %TOKEN%
-schtasks /create /tn "{dir_name}Tunnel" /tr "%ProgramData%\{dir_name}\\run_tunnel.cmd" /sc onstart /ru SYSTEM /rl highest /f >nul
+schtasks /create /tn "{dir_name}Tunnel" /tr "%ProgramData%\{dir_name}\\run_tunnel.cmd" /sc onlogon /ru "%USERNAME%" /rl highest /f >nul
 if %errorlevel% neq 0 echo      ERROR al crear la tarea programada
 schtasks /run /tn "{dir_name}Tunnel" >nul
-timeout /t 3 /nobreak >nul
+timeout /t 6 /nobreak >nul
 tasklist /FI "IMAGENAME eq cloudflared.exe" | findstr /i "cloudflared" >nul
 if %errorlevel% equ 0 echo      Tarea ejecutada: cloudflared corriendo sin servicio
 if %errorlevel% neq 0 echo      AVISO: cloudflared no arranco; reinicie el PC una vez
