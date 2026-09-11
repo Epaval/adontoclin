@@ -24,6 +24,7 @@ class ProveedorRequired(LoginRequiredMixin):
 
 
 class ClinicaListView(ProveedorRequired, ListView):
+    paginate_by = 8
     """Dashboard: lista de todas las clínicas."""
     model = Clinica
     template_name = "saas/clinica_list.html"
@@ -311,13 +312,13 @@ class ClinicaReactivarView(ProveedorRequired, View):
 
 
 class ClinicaEliminarView(ProveedorRequired, View):
-    """Elimina clinica + tunel + DNS de forma definitiva."""
+    """Borra SOLO el registro del SaaS (solo-DB); Cloudflare se limpia a mano."""
 
     def post(self, request, pk):
-        clinica = get_object_or_404(Clinica, pk=pk)
-        if clinica.tunnel_id:
-            CloudflareService().eliminar_tunnel(clinica.tunnel_id)
-        nombre = clinica.nombre
-        clinica.delete()
-        messages.success(request, f"Clinica {nombre} eliminada junto con su tunel y DNS.")
-        return redirect("saas:clinica_list")
+        from django.contrib import messages as _messages
+        from django.shortcuts import redirect as _redirect, get_object_or_404 as _go404
+        cl = _go404(Clinica, pk=pk)
+        nombre = cl.nombre
+        cl.delete()
+        _messages.success(request, f"🗑 {nombre} eliminada del SaaS. Recuerda borrar su túnel y CNAME en Cloudflare.")
+        return _redirect("saas:clinica_list")

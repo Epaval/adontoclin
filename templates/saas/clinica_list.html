@@ -12,6 +12,7 @@
   </div>
 
   <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:16px">
+{% if messages %}{% for m in messages %}<div class="mb-4 rounded-lg px-4 py-3 text-sm font-bold border {% if m.tags == 'success' %}bg-green-900/40 border-green-600 text-green-200{% else %}bg-red-900/40 border-red-600 text-red-200{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
     <table class="w-full">
       <thead>
         <tr style="border-bottom:1px solid var(--border)">
@@ -70,8 +71,8 @@
               <button class="btn bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-xs font-bold" title="Suspender servicio (impago)">⛔ Suspender</button>
             </form>
             {% endif %}
-            <form method="post" action="{% url 'saas:clinica_eliminar' c.pk %}" class="inline" onsubmit="return confirm('Eliminar definitivamente {{ c.nombre }} con su tunel y DNS?');">{% csrf_token %}
-              <button class="btn bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-bold" title="Eliminar clinica y tunel">🗑 Eliminar</button>
+            <form method="post" action="{% url 'saas:clinica_eliminar' c.pk %}" class="inline" onsubmit="return confirm('Eliminar {{ c.nombre }} del SaaS? El tunel y el CNAME en Cloudflare se borran manualmente.');">{% csrf_token %}
+              <button class="btn bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-bold" title="Eliminar solo el registro del SaaS">🗑 Eliminar</button>
             </form>
           </td>
         </tr>
@@ -84,6 +85,15 @@
         {% endfor %}
       </tbody>
     </table>
+{% if is_paginated %}
+<div class="flex items-center justify-between gap-3 mt-5 text-sm">
+  <span class="opacity-70">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} clínicas</span>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-slate-700 font-bold">‹ Anterior</a>{% endif %}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-slate-700 font-bold">Siguiente ›</a>{% endif %}
+  </div>
+</div>
+{% endif %}
   </div>
 </div>
 {% endblock %}

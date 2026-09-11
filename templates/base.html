@@ -207,7 +207,7 @@ body[data-theme] aside{backdrop-filter:blur(8px)}
           <a href="{% url 'acceso_remoto' %}" class="sidebar-link flex items-center gap-3"><span>🌐</span><span>Acceso remoto</span></a>
 {% endif %}
 {% if ROL == "proveedor" %}
-          <a href="{% url 'saas:clinica_list' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><span>🏥</span><span>Panel SaaS</span></a>
+          <a href="{% url 'saas:clinica_list' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold text-sky-300 bg-sky-500/10 border-l-4 border-sky-400 hover:bg-sky-500/20"><span>🏥</span><span>Panel SaaS</span></a>
 {% endif %}
 {% if ROL != "proveedor" %}
           <a href="{% url 'exportar_excel' %}?descargar=1" class="sidebar-link flex items-center gap-3">
@@ -513,6 +513,28 @@ document.addEventListener('click', function(e){
   if (e.target.closest('a,button,input,select,textarea,form')) return;
   location.href = tr.dataset.url;
 });
+</script>
+<style>
+#sidebar nav{scrollbar-width:thin;scrollbar-color:#334155 transparent}
+#sidebar a{transition:background .15s,color .15s}
+</style>
+<script>
+(function(){
+  var TIT=['OPERACIÓN','CLÍNICO','ADMINISTRACIÓN','ANALÍTICA'];
+  function esTitulo(el){return el && el.children.length===0 && TIT.indexOf(el.textContent.trim())>=0;}
+  function linksDespues(el){
+    var n=el.nextElementSibling,c=0;
+    while(n&&!esTitulo(n)){
+      if(n.tagName==='A'&&n.offsetParent)c++;
+      else if(n.querySelectorAll)c+=Array.from(n.querySelectorAll('a')).filter(function(a){return a.offsetParent;}).length;
+      n=n.nextElementSibling;
+    }
+    return c;
+  }
+  Array.from(document.querySelectorAll('#sidebar *')).forEach(function(el){
+    if(esTitulo(el)&&linksDespues(el)===0)el.style.display='none';
+  });
+})();
 </script>
 </body>
 </html>
