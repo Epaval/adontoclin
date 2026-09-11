@@ -534,6 +534,16 @@ document.addEventListener('click', function(e){
   Array.from(document.querySelectorAll('#sidebar *')).forEach(function(el){
     if(esTitulo(el)&&linksDespues(el)===0)el.style.display='none';
   });
+  /* Si existe el link Panel SaaS (rol proveedor), Panel principal sobra */
+  var saas=document.querySelector('#sidebar a[href*="/saas"]');
+  if(saas){
+    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(a){
+      if(a!==saas && /^Panel principal/i.test(a.textContent.trim())){
+        a.style.display='none';
+        if(a.parentElement && a.parentElement.textContent.trim()==='')a.parentElement.style.display='none';
+      }
+    });
+  }
 })();
 </script>
 </body>
