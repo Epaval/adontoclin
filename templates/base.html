@@ -520,8 +520,8 @@ document.addEventListener('click', function(e){
 </style>
 <script>
 (function(){
-  var TIT=['OPERACIÓN','CLÍNICO','ADMINISTRACIÓN','ANALÍTICA'];
-  function esTitulo(el){return el && el.children.length===0 && TIT.indexOf(el.textContent.trim())>=0;}
+  var TIT=['operación','clínico','administración','analítica'];
+  function esTitulo(el){if(!el)return false;var t=el.textContent.trim();return t.length<20&&TIT.indexOf(t.toLowerCase())>=0;}
   function linksDespues(el){
     var n=el.nextElementSibling,c=0;
     while(n&&!esTitulo(n)){
