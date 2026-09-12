@@ -207,7 +207,12 @@ body[data-theme] aside{backdrop-filter:blur(8px)}
           <a href="{% url 'acceso_remoto' %}" class="sidebar-link flex items-center gap-3"><span>🌐</span><span>Acceso remoto</span></a>
 {% endif %}
 {% if ROL == "proveedor" %}
-          <a href="{% url 'saas:clinica_list' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold text-sky-300 bg-sky-500/10 border-l-4 border-sky-400 hover:bg-sky-500/20"><span>🏥</span><span>Panel SaaS</span></a>
+          <a href="{% url 'saas:clinica_list' %}" class="sidebar-link flex items-center gap-3">
+            <span>🏥</span><span>Panel SaaS</span>
+          </a>
+          <a href="{% url 'accounts:equipo_list' %}" class="sidebar-link flex items-center gap-3">
+            <span>👥</span><span>Gestión de Equipo</span>
+          </a>
 {% endif %}
 {% if ROL != "proveedor" %}
           <a href="{% url 'exportar_excel' %}?descargar=1" class="sidebar-link flex items-center gap-3">
