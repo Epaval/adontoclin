@@ -1,14 +1,12 @@
+from pathlib import Path
+from datetime import timedelta
 import os
 import sys
-from pathlib import Path
+
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Inicializar variables de entorno
-env = environ.Env()
-env.read_env(BASE_DIR / '.env')
 
 # =========================================================
 # DETECCIÓN DE ENTORNO (PyInstaller vs Desarrollo)
@@ -21,7 +19,7 @@ if getattr(sys, "frozen", False):
         BASE_DIR = Path(sys.executable).parent / "_internal"
     ESCRITORIO = True
     os.environ["LABCLIN_MODO"] = "escritorio"
-    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente y writable
+    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente
     DATA_DIR = Path(sys.executable).parent / "data"
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 else:
@@ -34,16 +32,123 @@ else:
     else:
         DATA_DIR = BASE_DIR / "data"
 
-# SECRET_KEY
-if ESCRITORIO:
-    key_file = DATA_DIR / "secret.key"
-    if not key_file.exists():
-        from django.core.management.utils import get_random_secret_key
-        key_file.write_text(get_random_secret_key())
-    SECRET_KEY = key_file.read_text()
-else:
-    SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="clave-por-defecto-cambiar-en-produccion")
+env = environ.Env()
+env.read_env(BASE_DIR / ".env")
 
+# =========================================================
+# MODO DE EJECUCIÓN
+#   "web"        → servidores / hosting / laboratorios grandes
+#   "escritorio" → PC local / laboratorios pequeños (sin Docker)
+# =========================================================
+MODO = os.environ.get("LABCLIN_MODO", "web")
+ESCRITORIO = MODO == "escritorio"
+
+if ESCRITORIO:
+    DATA_DIR = Path(os.environ.get("LABCLIN_BASE", BASE_DIR)) / "data"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+else:
+    DATA_DIR = BASE_DIR / "data"
+
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
+
+# Clave secreta: en escritorio se genera y guarda una vez en data/
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", default=None)
+if not SECRET_KEY:
+    if ESCRITORIO:
+        key_file = DATA_DIR / "secret.key"
+        if key_file.exists():
+            SECRET_KEY = key_file.read_text().strip()
+        else:
+            from django.utils.crypto import get_random_string
+
+            SECRET_KEY = get_random_string(64)
+            key_file.write_text(SECRET_KEY)
+    elif DEBUG:
+        SECRET_KEY = "django-insecure-dev-only-key"
+    else:
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY es obligatorio en producción")
+
+# En escritorio aceptamos la red local del laboratorio
+if ESCRITORIO:
+    ALLOWED_HOSTS = [".trycloudflare.com", ".facdin.com", "facdin.com", "*"]
+else:
+    ALLOWED_HOSTS = env.list(
+        "DJANGO_ALLOWED_HOSTS",
+        default=["localhost", "127.0.0.1"] if DEBUG else [],
+    )
+
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[]) + [
+    "https://*.trycloudflare.com",
+    "https://*.facdin.com",
+    "https://facdin.com",
+]
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
+    "django.contrib.staticfiles",
+
+    "axes",
+    "simple_history",
+
+    "apps.core",
+    "apps.accounts",
+    "apps.doctors",
+    "apps.patients",
+    "apps.billing",
+    "apps.clinical",
+    "saas",
+]
+
+# unaccent nativo solo en modo web (PostgreSQL)
+if not ESCRITORIO:
+    INSTALLED_APPS.append("django.contrib.postgres")
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
+    "axes.middleware.AxesMiddleware",
+    "apps.core.middleware.LicenciaMiddleware",
+    "apps.core.middleware.ConfiguracionInicialMiddleware",
+    "apps.core.middleware.TasaMiddleware",
+]
+
+ROOT_URLCONF = "config.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "apps.core.context_processors.rol_global",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "apps.core.context_processors.tema_clinica",
+                "apps.core.context_processors.tasa_actual",
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+
+# ================= BASE DE DATOS =================
 if ESCRITORIO:
     DATABASES = {
         "default": {
