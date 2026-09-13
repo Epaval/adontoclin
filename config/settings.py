@@ -16,11 +16,20 @@ env.read_env(BASE_DIR / ".env")
 #   "web"        → servidores / hosting / laboratorios grandes
 #   "escritorio" → PC local / laboratorios pequeños (sin Docker)
 # =========================================================
-MODO = os.environ.get("LABCLIN_MODO", "web")
-ESCRITORIO = MODO == "escritorio"
+# Detectar automáticamente si es un ejecutable de Windows (PyInstaller)
+if getattr(sys, "frozen", False):
+    # Estamos en un ejecutable .exe
+    BASE_DIR = Path(sys.executable).parent
+    ESCRITORIO = True
+    os.environ["LABCLIN_MODO"] = "escritorio"
+else:
+    # Modo desarrollo o servidor
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    MODO = os.environ.get("LABCLIN_MODO", "web")
+    ESCRITORIO = MODO == "escritorio"
 
 if ESCRITORIO:
-    DATA_DIR = Path(os.environ.get("LABCLIN_BASE", BASE_DIR)) / "data"
+    DATA_DIR = BASE_DIR / "data"
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 else:
     DATA_DIR = BASE_DIR / "data"
