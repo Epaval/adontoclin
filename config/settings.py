@@ -2,41 +2,32 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import sys
-
-import environ
-from django.core.exceptions import ImproperlyConfigured
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-env = environ.Env()
-env.read_env(BASE_DIR / ".env")
+import os
+from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 
 # =========================================================
-# MODO DE EJECUCIÓN
-#   "web"        → servidores / hosting / laboratorios grandes
-#   "escritorio" → PC local / laboratorios pequeños (sin Docker)
+# DETECCIÓN DE ENTORNO (PyInstaller vs Desarrollo)
 # =========================================================
-# Detectar automáticamente si es un ejecutable de Windows (PyInstaller)
 if getattr(sys, "frozen", False):
-    # Estamos en un ejecutable .exe
-    BASE_DIR = Path(sys.executable).parent
+    # Modo Ejecutable (.exe)
+    if hasattr(sys, "_MEIPASS"):
+        BASE_DIR = Path(sys._MEIPASS)
+    else:
+        BASE_DIR = Path(sys.executable).parent / "_internal"
     ESCRITORIO = True
     os.environ["LABCLIN_MODO"] = "escritorio"
+    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente y writable
+    DATA_DIR = Path(sys.executable).parent / "data"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 else:
-    # Modo desarrollo o servidor
+    # Modo Desarrollo o Servidor
     BASE_DIR = Path(__file__).resolve().parent.parent
     MODO = os.environ.get("LABCLIN_MODO", "web")
     ESCRITORIO = MODO == "escritorio"
-
-if ESCRITORIO:
-    DATA_DIR = BASE_DIR / "data"
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-else:
-    DATA_DIR = BASE_DIR / "data"
-
-DEBUG = env.bool("DJANGO_DEBUG", default=False)
-
-# Clave secreta: en escritorio se genera y guarda una vez en data/
+    if ESCRITORIO:
+        DATA_DIR = BASE_DIR / "data"
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default=None)
 if not SECRET_KEY:
     if ESCRITORIO:
