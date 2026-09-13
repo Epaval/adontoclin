@@ -113,10 +113,6 @@ class CitaDentalCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "Cita registrada.")
         return super().form_valid(form)
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['request'] = self.request
-        return kwargs
 
     def get_success_url(self):
         return reverse_lazy("patients:historial", kwargs={"pk": self.paciente.pk})
