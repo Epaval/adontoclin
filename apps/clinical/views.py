@@ -93,7 +93,7 @@ class CitaDentalCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         from datetime import datetime, timedelta
         fecha = form.cleaned_data.get("fecha")
-        if fecha and fecha < datetime.now():
+        if fecha and fecha < timezone.now():
             messages.error(self.request, "No se pueden agendar citas en fecha pasada.")
             return self.form_invalid(form)
         if fecha:
