@@ -9,7 +9,7 @@
       <p class="text-sm text-slate-500 mt-0.5">Completa los campos y guarda los cambios</p>
     </div>
 
-    <form method="post" class="p-6">
+    <form method="post" enctype="multipart/form-data" class="p-6">
       {% csrf_token %}
       {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
       {% if datalist_perfiles %}<datalist id="perfiles-datalist">{% for p in datalist_perfiles %}<option value="{{ p }}">{% endfor %}</datalist>{% endif %}
