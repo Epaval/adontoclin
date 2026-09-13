@@ -43,4 +43,5 @@ handler500 = "config.views.handler500"
 
 from django.conf import settings as _settings
 from django.conf.urls.static import static as _static
-urlpatterns += _static(_settings.MEDIA_URL, document_root=_settings.MEDIA_ROOT)
+if _settings.ESCRITORIO or _settings.DEBUG:
+    urlpatterns += _static(_settings.MEDIA_URL, document_root=_settings.MEDIA_ROOT)

@@ -49,7 +49,10 @@ if ESCRITORIO:
 else:
     DATA_DIR = BASE_DIR / "data"
 
-DEBUG = env.bool("DJANGO_DEBUG", default=False)
+if ESCRITORIO:
+    DEBUG = True  # Forzar DEBUG en escritorio para servir archivos media/static localmente
+else:
+    DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 # Clave secreta: en escritorio se genera y guarda una vez en data/
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default=None)
