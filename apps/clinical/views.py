@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 from apps.patients.models import Paciente
 
@@ -91,7 +93,6 @@ class CitaDentalCreateView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        from datetime import datetime, timedelta
         fecha = form.cleaned_data.get("fecha")
         if fecha and fecha < timezone.now():
             messages.error(self.request, "No se pueden agendar citas en fecha pasada.")
@@ -487,7 +488,6 @@ class CitaNuevaView(LoginRequiredMixin, TemplateView):
         return ctx
 
     def post(self, request):
-        from datetime import datetime, timedelta
 
         paciente_pk = request.POST.get("paciente")
         fecha_str = request.POST.get("fecha", "")
