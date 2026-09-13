@@ -1,11 +1,16 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+import environ
 import sys
 import os
+import environ
 from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
+# =========================================================
+# DETECCIÓN DE ENTORNO (PyInstaller vs Desarrollo)
+# =========================================================
 # =========================================================
 # DETECCIÓN DE ENTORNO (PyInstaller vs Desarrollo)
 # =========================================================
@@ -17,17 +22,49 @@ if getattr(sys, "frozen", False):
         BASE_DIR = Path(sys.executable).parent / "_internal"
     ESCRITORIO = True
     os.environ["LABCLIN_MODO"] = "escritorio"
-    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente y writable
+    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente
     DATA_DIR = Path(sys.executable).parent / "data"
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 else:
     # Modo Desarrollo o Servidor
-    BASE_DIR = Path(__file__).resolve().parent.parent
     MODO = os.environ.get("LABCLIN_MODO", "web")
     ESCRITORIO = MODO == "escritorio"
     if ESCRITORIO:
         DATA_DIR = BASE_DIR / "data"
         DATA_DIR.mkdir(parents=True, exist_ok=True)
+    else:
+        DATA_DIR = BASE_DIR / "data" # Fallback
+# =========================================================
+# DETECCIÓN DE ENTORNO (PyInstaller vs Desarrollo)
+# =========================================================
+if getattr(sys, "frozen", False):
+    # Modo Ejecutable (.exe)
+    if hasattr(sys, "_MEIPASS"):
+        BASE_DIR = Path(sys._MEIPASS)
+    else:
+        BASE_DIR = Path(sys.executable).parent / "_internal"
+    ESCRITORIO = True
+    os.environ["LABCLIN_MODO"] = "escritorio"
+    # DATA_DIR debe estar fuera de _internal, junto al .exe, para ser persistente
+    DATA_DIR = Path(sys.executable).parent / "data"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+else:
+    # Modo Desarrollo o Servidor
+    MODO = os.environ.get("LABCLIN_MODO", "web")
+    ESCRITORIO = MODO == "escritorio"
+    if ESCRITORIO:
+        DATA_DIR = BASE_DIR / "data"
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+    else:
+        DATA_DIR = BASE_DIR / "data" # Fallback
+if ESCRITORIO:
+    key_file = DATA_DIR / "secret.key"
+    if not key_file.exists():
+        from django.core.management.utils import get_random_secret_key
+        key_file.write_text(get_random_secret_key())
+    SECRET_KEY = key_file.read_text()
+else:
+    SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="clave-por-defecto-cambiar-en-produccion")
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default=None)
 if not SECRET_KEY:
     if ESCRITORIO:
