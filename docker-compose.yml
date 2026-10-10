@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: labclin
       POSTGRES_USER: lab_user
@@ -15,6 +16,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -23,10 +25,12 @@ services:
 
   web:
     build: .
+    restart: unless-stopped
     env_file:
       - .env
     environment:
       DJANGO_DEBUG: "1"
+      DJANGO_LABCLIN_ROL: "proveedor"
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py runserver 0.0.0.0:8000"
@@ -42,8 +46,11 @@ services:
 
   worker:
     build: .
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      DJANGO_LABCLIN_ROL: "proveedor"
     command: celery -A config worker -l info
     volumes:
       - .:/app
@@ -55,3 +62,4 @@ services:
 
 volumes:
   pgdata:
+    name: odontoclin_pgdata
