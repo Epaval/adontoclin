@@ -120,11 +120,26 @@ class ClinicaDescargarZipView(ProveedorRequired, View):
         slug = clinica.slug
         slug_safe = re.sub(r"[^a-zA-Z0-9]", "_", slug)
 
+        # Configuración dinámica según el producto contratado
+        configs = {
+            "odontoclin": {"asset": "OdontoClin-Setup", "dir": "OdontoClin", "exe": "OdontoClin.exe", "lnk": "OdontoClin.lnk", "repo": "Epaval/adontoclin", "rol": "clinica"},
+            "labclin": {"asset": "LabClinico-Setup", "dir": "LabClinico", "exe": "LabClinico.exe", "lnk": "Lab Clinico.lnk", "repo": "Epaval/labclin", "rol": "clinica"},
+            "facturacion": {"asset": "Facturacion-Setup", "dir": "Facturacion", "exe": "Facturacion.exe", "lnk": "Facturacion.lnk", "repo": "Epaval/facturacion", "rol": "facturacion"},
+        }
+        cfg = configs.get(clinica.tipo_producto, configs["odontoclin"])
+        
+        asset_pref = cfg["asset"]
+        dir_name = cfg["dir"]
+        exe_name = cfg["exe"]
+        lnk_name = cfg["lnk"]
+        repo_slug = cfg["repo"]
+        env_rol = cfg["rol"]
+
         # --- .env personalizado ---
-        env_contenido = f"""# Configuracion {cfg['dir_name']} para {nombre}
+        env_contenido = f"""# Configuracion {dir_name} para {nombre}
 # Generado automaticamente por el panel SaaS
 
-DJANGO_LABCLIN_ROL={cfg['env_rol']}
+DJANGO_LABCLIN_ROL={env_rol}
 DJANGO_TUNNEL_URL={url_pub}
 DJANGO_CSRF_TRUSTED_ORIGINS=https://{slug}.facdin.com,https://*.facdin.com
 LABCLIN_PUERTO=8000
@@ -132,21 +147,8 @@ LABCLIN_MODO=escritorio
 CLOUDFLARE_TUNNEL={slug}
 """
 
-        # --- INSTALAR.bat unico: goto sin bloques multi-linea + log ---
-        # Configuración dinámica según el producto
-        configs = {
-            "odontoclin": {"asset_pref": "OdontoClin-Setup", "dir_name": "OdontoClin", "exe_name": "OdontoClin.exe", "lnk_name": "OdontoClin.lnk", "repo_slug": "Epaval/adontoclin", "env_rol": "clinica"},
-            "labclin": {"asset_pref": "LabClinico-Setup", "dir_name": "LabClinico", "exe_name": "LabClinico.exe", "lnk_name": "Lab Clinico.lnk", "repo_slug": "Epaval/labclin", "env_rol": "clinica"},
-            "facturacion": {"asset_pref": "Facturacion-Setup", "dir_name": "Facturacion", "exe_name": "Facturacion.exe", "lnk_name": "Facturacion.lnk", "repo_slug": "Epaval/facturacion", "env_rol": "facturacion"},
-        }
-        cfg = configs.get(clinica.tipo_producto, configs["odontoclin"])
-        asset_pref = cfg["asset_pref"]
-        dir_name = cfg["dir_name"]
-        exe_name = cfg["exe_name"]
-        lnk_name = cfg["lnk_name"]
-        repo_slug = cfg["repo_slug"]
-        env_rol = cfg["env_rol"]
-        instalar_bat = f"""@echo off
+        # --- INSTALAR.bat unico (usamos rf para evitar warnings de escape) ---
+        instalar_bat = rf"""@echo off
 chcp 65001 >nul
 setlocal EnableExtensions
 title Instalacion {dir_name} - {nombre}
@@ -195,7 +197,7 @@ msiexec /i "%TEMP%\cf.msi" /quiet /norestart
 echo [5/6] Registrando tunel de {nombre}...
 net stop cloudflared >nul 2>&1
 sc delete cloudflared >nul 2>&1
-reg delete "HKLM\\SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\Cloudflared" /f >nul 2>&1
+reg delete "HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Application\Cloudflared" /f >nul 2>&1
 set WAITN=0
 :WAITDEL
 sc query cloudflared >nul 2>&1
@@ -219,9 +221,9 @@ goto SVCOK
 echo      Servicio no disponible; creando tarea programada automatica...
 mkdir "%ProgramData%\{dir_name}" 2>nul
 copy /Y "%CFEXE%" "%ProgramData%\{dir_name}\cloudflared.exe" >nul
-> "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo @echo off
->> "%ProgramData%\{dir_name}\\run_tunnel.cmd" echo "%ProgramData%\{dir_name}\cloudflared.exe" tunnel run --token %TOKEN%
-schtasks /create /tn "{dir_name}Tunnel" /tr "%ProgramData%\{dir_name}\\run_tunnel.cmd" /sc onlogon /ru "%USERNAME%" /rl highest /f >nul
+> "%ProgramData%\{dir_name}\run_tunnel.cmd" echo @echo off
+>> "%ProgramData%\{dir_name}\run_tunnel.cmd" echo "%ProgramData%\{dir_name}\cloudflared.exe" tunnel run --token %TOKEN%
+schtasks /create /tn "{dir_name}Tunnel" /tr "%ProgramData%\{dir_name}\run_tunnel.cmd" /sc onlogon /ru "%USERNAME%" /rl highest /f >nul
 if %errorlevel% neq 0 echo      ERROR al crear la tarea programada
 schtasks /run /tn "{dir_name}Tunnel" >nul
 timeout /t 6 /nobreak >nul
@@ -245,13 +247,13 @@ exit /b
 :FAILDL
 echo ERROR: no se pudo descargar el instalador.
 echo Verifique internet o descargue manualmente desde:
-echo   https://github.com/Epaval/adontoclin/releases/latest
+echo   https://github.com/{repo_slug}/releases/latest
 pause
 exit /b 1
 """
 
-# --- LEEME.txt ---
-        leeme = f"""OdontoClin - Instalacion para {nombre}
+        # --- LEEME.txt ---
+        leeme = f"""{dir_name} - Instalacion para {nombre}
 ======================================
 
 INSTALACION (2 clics)
@@ -288,6 +290,7 @@ Clinica: {nombre} | URL: {url_pub}
         resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}"'
         resp["Content-Length"] = buf.getbuffer().nbytes
         return resp
+
 
 class ClinicaSuspenderView(ProveedorRequired, View):
     """Suspende el servicio: desactiva el tunel y marca estado."""
