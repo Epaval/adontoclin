@@ -167,9 +167,9 @@ echo ================================================
 echo   Instalacion automatica - {nombre}
 echo ================================================
 echo.
-echo [1/6] Descargando instalador oficial...
+echo [1/6] Descargando instalador oficial (version mas reciente)...
 del "%TEMP%\{dir_name}-Setup.exe" >nul 2>&1
-powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/{repo_slug}/releases/latest' -UseBasicParsing; $a = $r.assets | Where-Object {{ $_.name -like '{asset_pref}*' }} | Sort-Object created_at -Descending | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile '%TEMP%\{dir_name}-Setup.exe' -UseBasicParsing }} catch {{ exit 1 }}"
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try {{ $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/{repo_slug}/releases' -UseBasicParsing; $latest = $releases | Sort-Object published_at -Descending | Select-Object -First 1; $asset = $latest.assets | Where-Object {{ $_.name -like '{asset_pref}*' }} | Select-Object -First 1; if ($asset) {{ Invoke-WebRequest -Uri $asset.browser_download_url -OutFile '%TEMP%\{dir_name}-Setup.exe' -UseBasicParsing; Write-Host 'Version:' $latest.tag_name }} else {{ exit 1 }} }} catch {{ exit 1 }}"
 if not exist "%TEMP%\{dir_name}-Setup.exe" goto FAILDL
 for %%F in ("%TEMP%\{dir_name}-Setup.exe") do echo      Archivo descargado: %%~tF - %%~zF bytes
 echo [2/6] Instalando {dir_name} (silencioso, ~1 min)...
