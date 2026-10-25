@@ -121,10 +121,10 @@ class ClinicaDescargarZipView(ProveedorRequired, View):
         slug_safe = re.sub(r"[^a-zA-Z0-9]", "_", slug)
 
         # --- .env personalizado ---
-        env_contenido = f"""# Configuracion OdontoClin para {nombre}
+        env_contenido = f"""# Configuracion {cfg['dir_name']} para {nombre}
 # Generado automaticamente por el panel SaaS
 
-DJANGO_LABCLIN_ROL=clinica
+DJANGO_LABCLIN_ROL={cfg['env_rol']}
 DJANGO_TUNNEL_URL={url_pub}
 DJANGO_CSRF_TRUSTED_ORIGINS=https://{slug}.facdin.com,https://*.facdin.com
 LABCLIN_PUERTO=8000
@@ -133,12 +133,19 @@ CLOUDFLARE_TUNNEL={slug}
 """
 
         # --- INSTALAR.bat unico: goto sin bloques multi-linea + log ---
-        es_lab = clinica.tipo_producto == "labclin"
-        asset_pref = "LabClinico-Setup" if es_lab else "OdontoClin-Setup"
-        dir_name = "LabClinico" if es_lab else "OdontoClin"
-        exe_name = "LabClinico.exe" if es_lab else "OdontoClin.exe"
-        lnk_name = "Lab Clinico.lnk" if es_lab else "OdontoClin.lnk"
-        repo_slug = "Epaval/labclin" if es_lab else "Epaval/adontoclin"
+        # Configuración dinámica según el producto
+        configs = {
+            "odontoclin": {"asset_pref": "OdontoClin-Setup", "dir_name": "OdontoClin", "exe_name": "OdontoClin.exe", "lnk_name": "OdontoClin.lnk", "repo_slug": "Epaval/adontoclin", "env_rol": "clinica"},
+            "labclin": {"asset_pref": "LabClinico-Setup", "dir_name": "LabClinico", "exe_name": "LabClinico.exe", "lnk_name": "Lab Clinico.lnk", "repo_slug": "Epaval/labclin", "env_rol": "clinica"},
+            "facturacion": {"asset_pref": "Facturacion-Setup", "dir_name": "Facturacion", "exe_name": "Facturacion.exe", "lnk_name": "Facturacion.lnk", "repo_slug": "Epaval/facturacion", "env_rol": "facturacion"},
+        }
+        cfg = configs.get(clinica.tipo_producto, configs["odontoclin"])
+        asset_pref = cfg["asset_pref"]
+        dir_name = cfg["dir_name"]
+        exe_name = cfg["exe_name"]
+        lnk_name = cfg["lnk_name"]
+        repo_slug = cfg["repo_slug"]
+        env_rol = cfg["env_rol"]
         instalar_bat = f"""@echo off
 chcp 65001 >nul
 setlocal EnableExtensions
@@ -270,12 +277,12 @@ Clinica: {nombre} | URL: {url_pub}
         # --- Armar el ZIP ---
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr(f"OdontoClin_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat.replace("\n", "\r\n"))
-            zf.writestr(f"OdontoClin_{slug_safe}/.env", env_contenido)
-            zf.writestr(f"OdontoClin_{slug_safe}/LEEME.txt", leeme.replace("\n", "\r\n"))
+            zf.writestr(f"{dir_name}_{slug_safe}/INSTALAR_{slug_safe}.bat", instalar_bat.replace("\n", "\r\n"))
+            zf.writestr(f"{dir_name}_{slug_safe}/.env", env_contenido)
+            zf.writestr(f"{dir_name}_{slug_safe}/LEEME.txt", leeme.replace("\n", "\r\n"))
 
         buf.seek(0)
-        nombre_zip = f"OdontoClin_{slug_safe}.zip"
+        nombre_zip = f"{dir_name}_{slug_safe}.zip"
 
         resp = HttpResponse(buf.read(), content_type="application/zip")
         resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}"'

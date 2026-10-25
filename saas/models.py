@@ -20,7 +20,7 @@ class Clinica(models.Model):
     estado = models.CharField("Estado", max_length=20, choices=ESTADO_CHOICES, default="creando")
     tipo_producto = models.CharField(
         "Producto", max_length=15,
-        choices=[("odontoclin", "OdontoClin"), ("labclin", "LabClin")],
+        choices=[("odontoclin", "OdontoClin"), ("labclin", "LabClin"), ("facturacion", "Facturación")],
         default="odontoclin",
     )
     
